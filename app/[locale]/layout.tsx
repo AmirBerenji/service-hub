@@ -1,0 +1,30 @@
+import {NextIntlClientProvider} from 'next-intl';
+import {notFound} from 'next/navigation';
+import {messages} from '@/i18n';
+import '../globals.css';
+
+export default async function LocaleLayout({
+  children,
+  params
+}: {
+  children: React.ReactNode;
+  params: Promise<{locale: string}>;
+}) {
+  const {locale} = await params;
+
+  const localeMessages = messages[locale as keyof typeof messages];
+
+  if (!localeMessages) {
+    notFound();
+  }
+
+  return (
+    <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+      <body>
+        <NextIntlClientProvider messages={localeMessages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}
