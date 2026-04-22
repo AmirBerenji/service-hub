@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import React from 'react';
 
 export default function MiddlePart() {
-  const t = useTranslations("MiddlePart");
+  const t = useTranslations("Home");
   const { locale } = useParams();
 
   const services = [
