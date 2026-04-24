@@ -3,13 +3,14 @@
 // import { getProfile } from "@/action/apiAction";
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function NavbarTopSide() {
   const t = useTranslations("MenuPage");
   const pathname = usePathname(); // e.g. /en/aboutus
   const locale = useLocale(); // e.g. en
+  const { locales } = useParams();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -41,15 +42,18 @@ export default function NavbarTopSide() {
   // }, []);
 
   return (
-   <>
-    {/* NAVBAR */}
-        <div className="h-16 flex items-center justify-between px-6 md:px-16 bg-white/5 backdrop-blur">
-          <h1 className="text-xl font-bold">ServiceHub</h1>
+    <>
+      {/* NAVBAR */}
+      
+      <div className="h-16 flex items-center justify-between px-6 md:px-16 bg-white/5 backdrop-blur">
+        <h1 className="text-xl font-bold">ServiceHub</h1>
+        <Link href={`${locale}/user/signup/provider`} >
           <button className="bg-amber-400 text-black px-4 py-2 rounded-full font-medium hover:bg-amber-500 transition">
             Sign In
           </button>
-        </div>
+        </Link>
+      </div>
 
-   </>
+    </>
   );
 }

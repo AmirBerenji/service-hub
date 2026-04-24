@@ -12,9 +12,6 @@ export default async function LocaleLayout({
   return (
    <>
    <div >
-{/* 
-<ContactTopSide/>
-<NavbarTopSide/> */}
     
        {children}
 
