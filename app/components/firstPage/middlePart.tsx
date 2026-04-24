@@ -1,45 +1,52 @@
 "use client";
 
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import React from 'react';
 
 export default function MiddlePart() {
-  const t = useTranslations("Home");
+  const t = useTranslations("Services");
   const { locale } = useParams();
 
   const services = [
-    { name: "Cleaning", slug: "cleaning" },
-    { name: "Beauty", slug: "beauty" },
-    { name: "Plumbing", slug: "plumbing" },
-    { name: "Car Repair", slug: "car-repair" },
-    { name: "Electrician", slug: "electrician" },
-    { name: "Painting", slug: "painting" },
-    { name: "Moving", slug: "moving" },
-    { name: "IT Support", slug: "it-support" },
+    { name: "Cleaning", slug: "cleaning", image: "/assets/images/cleaning.jpeg" },
+    { name: "Beauty", slug: "beauty", image: "/assets/images/beauty.avif" },
+
   ];
 
   return (
     <section className="bg-slate-100 py-16 px-6 md:px-16">
 
-      <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center">
+      <div className="text-3xl font-light mb-10 text-center">
         {t("title") || "Popular Services"}
-      </h2>
+      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {/* FLEX container (centered always) */}
+      <div className="flex flex-wrap justify-center gap-6">
 
         {services.map((item, i) => (
           <Link
             key={i}
             href={`/${locale}/services/${item.slug}`}
-            className="block"
+            className="w-[45%] sm:w-[40%] md:w-[30%] lg:w-[22%] xl:w-[18%]"
           >
-            <div className="bg-white rounded-2xl p-6 shadow hover:shadow-xl hover:scale-[1.03] transition cursor-pointer text-center">
+            <div className="relative h-40 bg-white rounded-2xl overflow-hidden shadow hover:shadow-xl hover:scale-[1.03] transition cursor-pointer">
 
-              <div className="w-12 h-12 bg-amber-400 rounded-full mx-auto mb-4"></div>
+              <Image
+                src={item.image}
+                alt={item.name}
+                fill
+                className="object-cover"
+              />
 
-              <p className="font-medium">{item.name}</p>
+              {/* overlay */}
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <p className="text-white font-bold text-xl text-center px-2">
+                  {item.name}
+                </p>
+              </div>
 
             </div>
           </Link>
