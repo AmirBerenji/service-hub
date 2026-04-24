@@ -2,5 +2,9 @@
   "Home": {
     "title": "Hello world",
     "description": "Welcome to our app"
+  },
+  "Services": {
+    "title": "Our services",
+    "description": "Welcome to our app"
   }
 }
