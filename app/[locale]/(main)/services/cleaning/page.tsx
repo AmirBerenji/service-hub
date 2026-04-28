@@ -1,16 +1,25 @@
+"use client"
+import MapView, { MapLocation } from '@/app/components/general/MapView';
+import FooterSide from '@/app/components/nav/FooterSide'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link';
 import React from 'react'
+
+const places: MapLocation[] = [
+  { id: 1, name: 'Yerevan',  lat: 40.1792, lng: 44.4991, description: 'Capital of Armenia' },
+  { id: 2, name: 'Tbilisi',  lat: 41.6938, lng: 44.8015, description: 'Capital of Georgia'  },
+  { id: 3, name: 'Baku',     lat: 40.4093, lng: 49.8671, description: 'Capital of Azerbaijan' },
+  { id: 4, name: 'Tehran',   lat: 35.6892, lng: 51.3890, description: 'Capital of Iran'     },
+];
 
 export default function CleaningPage() {
   return (
     <div className="bg-white text-slate-800">
 
-      {/* NAVBAR */}
-      <div className="h-16 flex items-center justify-between px-6 md:px-16 border-b">
-        <h1 className="text-xl font-bold text-teal-600">Cleaning Services</h1>
-        <button className="bg-teal-600 text-white px-4 py-2 rounded-full hover:bg-teal-700 transition">
-          Book Now
-        </button>
-      </div>
+        <Link href="/" className="bg-teal-600 mt-3 ml-3 text-white px-2 py-2 absolute rounded-full hover:bg-teal-700 transition">
+          <ArrowLeft size={16} />
+          
+        </Link>
 
       {/* HERO */}
       <section className="grid md:grid-cols-2 items-center  bg-gradient-to-br from-teal-50 to-blue-100">
@@ -53,7 +62,7 @@ export default function CleaningPage() {
       </section>
 
       {/* CATEGORIES */}
-      <section className="py-16 px-6 md:px-16">
+      {/* <section className="py-16 px-6 md:px-16">
 
         <h2 className="text-3xl font-bold text-center mb-10">
           Cleaning Services We Offer
@@ -82,18 +91,14 @@ export default function CleaningPage() {
 
         </div>
 
-      </section>
+      </section> */}
 
       {/* FEATURED CLEANERS */}
       <section className="bg-teal-50 py-16 px-6 md:px-16">
 
-        <h2 className="text-3xl font-bold text-center mb-10">
-          Top Rated Cleaners
-        </h2>
-
         <div className="grid md:grid-cols-3 gap-6">
 
-          {[1,2,3].map((item) => (
+          {[1, 2, 3].map((item) => (
             <div key={item} className="bg-white rounded-2xl shadow p-4">
 
               <div className="h-40 bg-slate-200 rounded-xl mb-4"></div>
@@ -112,6 +117,15 @@ export default function CleaningPage() {
 
       </section>
 
+
+ <MapView
+        locations={places}
+        height="480px"
+        zoom={60}
+      />
+
+
+
       {/* CTA */}
       <section className="py-16 text-center px-6 md:px-16">
 
@@ -129,11 +143,9 @@ export default function CleaningPage() {
 
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-slate-900 text-slate-400 py-6 text-center text-sm">
-        © 2026 ServiceHub — Cleaning
-      </footer>
-
+       
+     
+     <FooterSide />
     </div>
   )
 }
