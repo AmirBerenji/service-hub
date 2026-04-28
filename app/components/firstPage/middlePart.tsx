@@ -11,8 +11,8 @@ export default function MiddlePart() {
   const { locale } = useParams();
 
   const services = [
-    { name: "Cleaning", slug: "cleaning", image: "/assets/images/cleaning.jpeg" },
-    { name: "Beauty", slug: "beauty", image: "/assets/images/beauty.avif" },
+    { name: "Cleaning", slug: "cleaning", image: "/assets/images/cleaning.jpeg#400" },
+    { name: "Beauty", slug: "beauty", image: "/assets/images/beauty.avif#800" },
 
   ];
 
