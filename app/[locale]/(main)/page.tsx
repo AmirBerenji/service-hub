@@ -1,11 +1,21 @@
 "use client"
 import BannerMainPage from '@/app/components/banner/BannerMainPage'
 import MiddlePart from '@/app/components/firstPage/middlePart'
+import MapView, { MapLocation }  from '@/app/components/general/MapView'
 import FooterSide from '@/app/components/nav/FooterSide'
 import NavbarTopSide from '@/app/components/nav/NavbarTopSide'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import React from 'react'
+
+
+const places: MapLocation[] = [
+  { id: 1, name: 'Yerevan',  lat: 40.1792, lng: 44.4991, description: 'Capital of Armenia' },
+  { id: 2, name: 'Tbilisi',  lat: 41.6938, lng: 44.8015, description: 'Capital of Georgia'  },
+  { id: 3, name: 'Baku',     lat: 40.4093, lng: 49.8671, description: 'Capital of Azerbaijan' },
+  { id: 4, name: 'Tehran',   lat: 35.6892, lng: 51.3890, description: 'Capital of Iran'     },
+];
+
 
 export default function Page() {
   const { locale } = useParams();
@@ -20,6 +30,17 @@ export default function Page() {
       </section>
 
       <MiddlePart />
+
+
+   <MapView
+        locations={places}
+        height="480px"
+        zoom={60}
+      />
+
+
+
+
 
       {/* CTA SECTION */}
       <section className="bg-slate-900 text-white py-16 px-6 md:px-16 text-center">
