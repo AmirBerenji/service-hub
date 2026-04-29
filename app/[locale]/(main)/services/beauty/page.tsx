@@ -1,16 +1,44 @@
+"use client"
+import MapView, { MapLocation } from '@/app/components/general/MapView';
+import FooterSide from '@/app/components/nav/FooterSide'
+import { ArrowLeft} from 'lucide-react'
+import Link from 'next/link'
 import React from 'react'
+
+
+const places: MapLocation[] = [
+  { id: 1, name: 'Corto y Cambio', lat: 40.4272623, lng: -3.7035643, description: 'Hair salon location' },
+  { id: 2, name: 'El Kinze de Cuchilleros', lat: 40.414266, lng: -3.7078754, description: 'Barber & hair salon' },
+  { id: 3, name: 'Blow Dry Bar', lat: 40.4249933, lng: -3.6966894, description: 'Hair salon & lounge' },
+  { id: 4, name: 'Bearbero', lat: 40.4102029, lng: -3.7066464, description: 'Barber shop' },
+  { id: 5, name: 'Urbano Peluqueros', lat: 40.4238619, lng: -3.7012551, description: 'Barber shop' },
+  { id: 6, name: 'Peluquería Luís', lat: 40.4157256, lng: -3.7028407, description: 'Hair salon' },
+  { id: 7, name: 'Carlos Conde', lat: 40.4117592, lng: -3.7073651, description: 'Men’s barber shop' },
+  { id: 8, name: "The Barber's Shop", lat: 40.4377753, lng: -3.6763434, description: 'Barber shop' },
+  { id: 9, name: 'La Raya A Un Lado', lat: 40.40845632, lng: -3.70766868, description: 'Hair salon' },
+  { id: 10, name: 'Peluquería Tay Yang Feng', lat: 40.4222409, lng: -3.7106903, description: 'Hair salon' },
+  { id: 11, name: 'Are You Ready?', lat: 40.419497, lng: -3.709536, description: 'Hair, nails & skincare salon' },
+  { id: 12, name: 'Compadre', lat: 40.4207447, lng: -3.7003208, description: 'Barber & cocktail bar' },
+  { id: 13, name: 'Carlos Conde', lat: 40.436551, lng: -3.6924806, description: 'Men’s barber shop' },
+  { id: 14, name: "Aire's - Salon de Belleza", lat: 40.4295991, lng: -3.7086485, description: 'Hair salon & waxing' },
+  { id: 15, name: 'Black&White Peluqueros', lat: 40.426175, lng: -3.685144, description: 'Hair salon' },
+  { id: 16, name: 'Shave', lat: 40.4322419, lng: -3.7235376, description: 'Barber & skincare' },
+  { id: 17, name: 'Paco Cabello', lat: 40.4291937, lng: -3.7045295, description: 'Hair salon' },
+  { id: 18, name: 'Val Souza Estilistas', lat: 40.4109226, lng: -3.7028315, description: 'Hair salon' },
+  { id: 19, name: 'Carmen Peralta', lat: 40.4274558, lng: -3.6854929, description: 'Hair & makeup artist' },
+  { id: 20, name: 'Malayerba', lat: 40.4270758, lng: -3.7045362, description: 'Barber & hair salon' },
+];
+
 
 export default function BeautyPage() {
   return (
     <div className="bg-white text-slate-800">
 
-      {/* NAVBAR */}
-      <div className="h-16 flex items-center justify-between px-6 md:px-16 border-b">
-        <h1 className="text-xl font-bold text-rose-500">Beauty Services</h1>
-        <button className="bg-rose-500 text-white px-4 py-2 rounded-full hover:bg-rose-600 transition">
-          Book Now
-        </button>
-      </div>
+      
+      <Link href="/" className="bg-rose-500 mt-3 ml-3 text-white px-2 py-2 absolute rounded-full hover:bg-rose-600 transition">
+          <ArrowLeft size={16} />
+          
+        </Link>
 
       {/* HERO */}
       <section className="grid md:grid-cols-2 items-center   bg-gradient-to-br from-rose-50 to-pink-100">
@@ -42,42 +70,10 @@ export default function BeautyPage() {
         {/* RIGHT IMAGE */}
         <div className="hidden md:flex items-end justify-end h-full relative">
           <img
-            src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="/assets/images/beauty.avif"
             alt="beauty"
             className="w-[120%] max-w-none object-contain rounded-bl-4xl rounded-tl-4xl  "
           />
-        </div>
-
-      </section>
-
-      {/* CATEGORIES */}
-      <section className="py-16 px-6 md:px-16">
-
-        <h2 className="text-3xl font-bold text-center mb-10">
-          Popular Beauty Services
-        </h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-
-          {[
-            "Hair Styling",
-            "Makeup",
-            "Nail Care",
-            "Facial & Skincare",
-            "Massage",
-            "Waxing",
-            "Eyebrows",
-            "Spa Treatments"
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="bg-white border rounded-2xl p-6 text-center hover:shadow-lg transition cursor-pointer"
-            >
-              <div className="w-14 h-14 bg-rose-100 rounded-full mx-auto mb-4"></div>
-              <p className="font-medium">{item}</p>
-            </div>
-          ))}
-
         </div>
 
       </section>
@@ -110,6 +106,13 @@ export default function BeautyPage() {
 
       </section>
 
+ <MapView
+        locations={places}
+        height="480px"
+        zoom={60}
+      />
+
+
       {/* CTA */}
       <section className="py-16 text-center px-6 md:px-16">
 
@@ -127,10 +130,7 @@ export default function BeautyPage() {
 
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-slate-900 text-slate-400 py-6 text-center text-sm">
-        © 2026 ServiceHub — Beauty
-      </footer>
+      <FooterSide />
 
     </div>
   )

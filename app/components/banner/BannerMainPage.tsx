@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import React from "react";
 
 export default function BannerMainPage() {
@@ -40,9 +41,11 @@ export default function BannerMainPage() {
           {/* RIGHT (IMAGE STICKS TO BOTTOM) */}
           <div className="hidden md:flex items-end justify-end h-full relative">
 
-            <img
+            <Image
               src="/assets/images/service-hub.png"
               alt="services"
+              width={2000}
+              height={2000}
               className="absolute bottom-0 -right-16 w-[140%] max-w-none object-contain"
             />
 
