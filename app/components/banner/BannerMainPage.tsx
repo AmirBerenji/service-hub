@@ -46,7 +46,7 @@ export default function BannerMainPage() {
               alt="services"
               width={2000}
               height={2000}
-              className="absolute bottom-0 -right-16 w-[140%] max-w-none object-contain"
+              className="absolute bottom-0 -right-16 w-[100%]  object-contain"
             />
 
           </div>
