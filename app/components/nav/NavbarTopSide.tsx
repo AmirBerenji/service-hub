@@ -20,12 +20,21 @@ export default function NavbarTopSide() {
     <div className="h-16 flex items-center justify-between px-6 md:px-16 bg-white/5 backdrop-blur z-50">
       <h1 className="text-xl font-bold">ServiceHub</h1>
 
-      <Link
-        href={`/${locale}/user/signin`}
-        className="bg-amber-300 text-black px-4 py-2 rounded-full font-medium  transition inline-block"
-      >
-        Sign In
-      </Link>
+      <div>
+        <Link
+          href={`/${locale}/user/signup/client`}
+          className="text-amber-500 mr-5  font-medium  transition inline-block"
+        >
+          Sign up
+        </Link>
+
+        <Link
+          href={`/${locale}/user/signin`}
+          className="bg-amber-300 text-black px-4 py-2 rounded-full font-medium  transition inline-block"
+        >
+          Sign In
+        </Link>
+      </div>
     </div>
   );
 }
