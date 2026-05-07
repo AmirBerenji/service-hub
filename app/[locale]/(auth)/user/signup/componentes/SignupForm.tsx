@@ -1,3 +1,4 @@
+import { register } from "@/action/apiAction";
 import { motion } from "framer-motion";
 import React from "react";
 
@@ -6,8 +7,17 @@ interface SignupFormProps {
 }
 
 export default function SignupForm({ role }: SignupFormProps) {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+   await register(new FormData(e.currentTarget)).then((response) => {
+      if (response.success) {
+        alert("Registration successful!");  
+      } else {
+        alert("Registration failed: " + response.message);
+      }
+
+    });
     console.log("Form submitted for role:", role);
   };
   return (

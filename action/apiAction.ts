@@ -21,6 +21,8 @@ export async function register(formdata: FormData) {
     role: formdata.get("role") as string,
   };
 
+  console.log("🔍 Register data received:", register) ;
+
   if (
     (typeof register.email == "undefined" && !register.email) ||
     (typeof register.password == "undefined" && !register.password) ||

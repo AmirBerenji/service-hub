@@ -7,13 +7,12 @@ export default class Validation {
 
     }
 
-    validateEmail = (email : string) => {
-        if(isEmail(email))
-        {
-            return true;
-        }else
-        {
+     validateEmail = (email?: string | null): boolean => {
+
+        if (!email || typeof email !== 'string') {
             return false;
         }
+
+        return isEmail(email);
     }
 }
