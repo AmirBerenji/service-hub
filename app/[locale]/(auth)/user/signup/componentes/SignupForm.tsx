@@ -7,17 +7,22 @@ interface SignupFormProps {
 }
 
 export default function SignupForm({ role }: SignupFormProps) {
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-   await register(new FormData(e.currentTarget)).then((response) => {
-      if (response.success) {
-        alert("Registration successful!");  
-      } else {
-        alert("Registration failed: " + response.message);
-      }
+    const formData = new FormData(e.currentTarget);
 
-    });
+    // Add role from props
+    formData.append("role", role);
+
+    const response = await register(formData);
+
+    if (response.success) {
+      alert("Registration successful!");
+    } else {
+      alert("Registration failed: " + response.message);
+    }
+
     console.log("Form submitted for role:", role);
   };
   return (
@@ -44,6 +49,8 @@ export default function SignupForm({ role }: SignupFormProps) {
               //onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="Enter your full name"
+              id="fullname"
+              name="fullname"
               required
             />
           </div>
@@ -57,6 +64,8 @@ export default function SignupForm({ role }: SignupFormProps) {
               //onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="Enter your phone number"
+              id="phone"
+              name="phone"
               required
             />
           </div>
@@ -68,6 +77,8 @@ export default function SignupForm({ role }: SignupFormProps) {
               //onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="Enter your email"
+              id="email"
+              name="email"
               required
             />
           </div>
@@ -79,6 +90,8 @@ export default function SignupForm({ role }: SignupFormProps) {
               //onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="Enter your password"
+              id="password"
+              name="password"
               required
             />
           </div>
@@ -93,6 +106,8 @@ export default function SignupForm({ role }: SignupFormProps) {
               //onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
               placeholder="Confirm your password"
+              id="confirmpassword"
+              name="confirmpassword"
               required
             />
           </div>
