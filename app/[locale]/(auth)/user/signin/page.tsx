@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
+import SigninForm from "./components/SignInForm";
 
 
 export default function LoginPage() {
@@ -55,81 +56,7 @@ export default function LoginPage() {
         </div>
 
         {/* RIGHT SIDE */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="p-8 md:p-10 flex flex-col justify-center"
-        >
-          {/* ROLE SWITCH */}
-          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setRole("client")}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-                role === "client"
-                  ? "bg-amber-400 text-[#0B1E3C]"
-                  : "text-gray-500"
-              }`}
-            >
-              Client
-            </button>
-            <button
-              onClick={() => setRole("provider")}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
-                role === "provider"
-                  ? "bg-amber-400 text-[#0B1E3C]"
-                  : "text-gray-500"
-              }`}
-            >
-              Provider
-            </button>
-          </div>
-
-          <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
-            {role === "provider" ? "Provider Login" : "Client Login"}
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-amber-400 text-[#0B1E3C] font-semibold py-2 rounded-lg hover:bg-amber-500 transition"
-            >
-              Login as {role}
-            </button>
-          </form>
-
-          <p className="text-sm text-center text-gray-500 mt-4">
-            {role === "provider" ? (
-              <>Need access? <span className="text-amber-500 cursor-pointer">Contact admin</span></>
-            ) : (
-              <>Don't have an account? <span className="text-amber-500 cursor-pointer">Sign up</span></>
-            )}
-          </p>
-        </motion.div>
+        <SigninForm />
       </div>
     </div>
   );

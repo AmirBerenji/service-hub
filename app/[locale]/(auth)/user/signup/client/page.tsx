@@ -23,7 +23,7 @@ export default function ClientSignupPage() {
             className="rounded-xl mt-6 object-cover h-48 w-full border-4 border-amber-400"
           />
         </div>
-        <SignupForm role="gust" /> {/* RIGHT SIDE - LOGIN FORM */}
+        <SignupForm role="guest" /> {/* RIGHT SIDE - LOGIN FORM */}
       </div>
     </div>
   );
