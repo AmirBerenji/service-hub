@@ -1,4 +1,4 @@
-import { register } from "@/action/apiAction";
+import { login } from "@/action/apiAction";
 import { motion } from "framer-motion";
 import React from "react";
 
@@ -12,10 +12,10 @@ export default function SigninForm() {
     // Add role from props
     formData.append("role", "client");
 
-    const response = await register(formData);
+    const response = await login(formData);
 
-    if (response.success) {
-      alert("Registration successful!");
+    if (response.error) {
+      alert("Login failed: " + response.message);
     } else {
       alert("Registration failed: " + response.message);
     }

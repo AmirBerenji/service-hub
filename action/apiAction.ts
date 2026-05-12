@@ -59,46 +59,6 @@ export async function register(formdata: FormData) {
   return { message: "Your email format is not true", success: false };
 }
 
-export async function parentregister(formdata: FormData) {
-  const register: Register = {
-    email: formdata.get("email") as string,
-    password: formdata.get("password") as string,
-    password_confirmation: formdata.get("confirmpassword") as string,
-    name: formdata.get("fullname") as string,
-    phone: formdata.get("phone") as string,
-    role: formdata.get("role") as string,
-  };
-
-  if (
-    (typeof register.email == "undefined" && !register.email) ||
-    (typeof register.password == "undefined" && !register.password) ||
-    (typeof register.password_confirmation == "undefined" &&
-      !register.password_confirmation) ||
-    (typeof register.name == "undefined" && !register.name)
-  ) {
-    return { message: "Please fill all data!!!", success: false };
-  }
-
-  if (register.password != register.password_confirmation) {
-    return {
-      message: "Password and Confirn Password is not same!!!",
-      success: false,
-    };
-  }
-
-  const result = new Validation().validateEmail(register.email);
-
-  if (result) {
-    const req = await agent.Account.register(register);
-    if (req.success == false) {
-      return { message: req.message, success: false };
-    }
-    new CookieConfig().setToken("jwt", req.data.token);
-
-    redirect("/user/profile");
-  }
-  return { message: "Your email format is not true", success: false };
-}
 
 export async function login(formdata: FormData) {
   const login: Login = {
