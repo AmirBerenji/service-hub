@@ -21,7 +21,7 @@ export async function register(formdata: FormData) {
     role: formdata.get("role") as string,
   };
 
-  console.log("🔍 Register data received:", register) ;
+  console.log("🔍 Register data received:", register);
 
   if (
     (typeof register.email == "undefined" && !register.email) ||
@@ -59,13 +59,12 @@ export async function register(formdata: FormData) {
   return { message: "Your email format is not true", success: false };
 }
 
-
 export async function login(formdata: FormData) {
   const login: Login = {
     email: formdata.get("email") as string,
     password: formdata.get("password") as string,
   };
-
+  console.log("🔍 Login data received:", login);
   if (
     (typeof login.email == "undefined" && !login.email) ||
     (typeof login.password == "undefined" && !login.password)
@@ -75,6 +74,7 @@ export async function login(formdata: FormData) {
 
   const result = new Validation().validateEmail(login.email);
 
+  console.log("🔍 Email validation result:", result);
   if (result) {
     const req = await agent.Account.login(login);
     console.log("Login response:", req);

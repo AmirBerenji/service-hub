@@ -1,27 +1,45 @@
+"use client";
 import { login } from "@/action/apiAction";
+import ErrorMessage from "@/app/components/general/ErrorMessage";
+import LoadingPage from "@/app/components/general/Loading";
 import { motion } from "framer-motion";
-import React from "react";
-
+import { useLocale, useTranslations } from "next-intl";
+import React, { useEffect, useState } from "react";
 
 export default function SigninForm() {
-   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const t = useTranslations("signin");
+  const locale = useLocale();
+
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setIsLoading(true);
+
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
 
-    // Add role from props
-    formData.append("role", "client");
-
     const response = await login(formData);
 
     if (response.error) {
-      alert("Login failed: " + response.message);
+      console.log("Login response:", response);
+      setMessage(response.message);
     } else {
-      alert("Registration failed: " + response.message);
+      setMessage("Login successful!");
     }
 
-    console.log("Form submitted for role:", "client");
+    setIsLoading(false);
   };
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   return (
     <>
       {/* RIGHT SIDE - LOGIN FORM */}
@@ -36,7 +54,7 @@ export default function SigninForm() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-         
+          {isLoading ? <LoadingPage /> : <></>}
           <div>
             <label className="block text-sm text-gray-600 mb-1">Email</label>
             <input
@@ -63,8 +81,7 @@ export default function SigninForm() {
               required
             />
           </div>
-
-       
+          <ErrorMessage message={message} />
           <button
             type="submit"
             className="w-full bg-amber-400 text-[#0B1E3C] font-semibold py-2 rounded-lg hover:bg-amber-500 transition"

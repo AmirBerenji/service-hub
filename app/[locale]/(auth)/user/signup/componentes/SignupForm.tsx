@@ -1,13 +1,22 @@
+"use client";
 import { register } from "@/action/apiAction";
+import ErrorMessage from "@/app/components/general/ErrorMessage";
 import { motion } from "framer-motion";
-import React from "react";
+import React, { use, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "use-intl";
 
 interface SignupFormProps {
   role: string;
 }
 
 export default function SignupForm({ role }: SignupFormProps) {
-   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const t = useTranslations("signin");
+  const locale = useLocale();
+
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setIsLoading(true);
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
@@ -18,13 +27,22 @@ export default function SignupForm({ role }: SignupFormProps) {
     const response = await register(formData);
 
     if (response.success) {
-      alert("Registration successful!");
+      setMessage("Registration successful!");
     } else {
-      alert("Registration failed: " + response.message);
+      setMessage(response.message);
     }
 
     console.log("Form submitted for role:", role);
+    setIsLoading(false);
   };
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
   return (
     <>
       {/* RIGHT SIDE - LOGIN FORM */}
@@ -111,7 +129,7 @@ export default function SignupForm({ role }: SignupFormProps) {
               required
             />
           </div>
-
+          <ErrorMessage message={message} />
           <button
             type="submit"
             className="w-full bg-amber-400 text-[#0B1E3C] font-semibold py-2 rounded-lg hover:bg-amber-500 transition"
