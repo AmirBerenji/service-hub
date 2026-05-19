@@ -23,7 +23,6 @@ export default function SigninForm() {
     const response = await login(formData);
 
     if (response.error) {
-      console.log("Login response:", response);
       setMessage(response.message);
     } else {
       setMessage("Login successful!");

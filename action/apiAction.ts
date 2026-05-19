@@ -89,6 +89,7 @@ export async function login(formdata: FormData) {
 
 export async function getProfile() {
   const req = await agent.Account.getProfile();
+  console.log("getProfile response:", req);
   return req?.data;
 }
 

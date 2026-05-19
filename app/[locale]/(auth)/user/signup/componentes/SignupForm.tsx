@@ -32,7 +32,6 @@ export default function SignupForm({ role }: SignupFormProps) {
       setMessage(response.message);
     }
 
-    console.log("Form submitted for role:", role);
     setIsLoading(false);
   };
   useEffect(() => {
