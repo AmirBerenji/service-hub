@@ -11,7 +11,7 @@ import {
 } from "@/model/auth";
 import { redirect } from "next/navigation";
 
-export async function register(formdata: FormData) {
+export async function register(formdata: FormData, locale: string = "en") {
   const register: Register = {
     email: formdata.get("email") as string,
     password: formdata.get("password") as string,
@@ -48,18 +48,20 @@ export async function register(formdata: FormData) {
       return { message: req.message, success: false };
     }
     new CookieConfig().setToken("jwt", req.data.token);
-    if (
-      req.data.user.roles.includes("nurse") ||
-      req.data.user.roles.includes("doctor")
-    ) {
-      redirect("/user/profile");
+    if (req.data.user.roles.includes("provider")) {
+      redirect(`/${locale}/profile`);
     }
-    redirect("/");
+    if (req.data.user.roles.includes("guest")) {
+      redirect(`/${locale}`);
+    }
+    if (req.data.user.roles.includes("admin")) {
+      redirect(`/${locale}/admin/dashboard`);
+    }
   }
   return { message: "Your email format is not true", success: false };
 }
 
-export async function login(formdata: FormData) {
+export async function login(formdata: FormData, locale: string = "en") {
   const login: Login = {
     email: formdata.get("email") as string,
     password: formdata.get("password") as string,
@@ -82,7 +84,7 @@ export async function login(formdata: FormData) {
       return { message: req.message, error: true };
     }
     new CookieConfig().setToken("jwt", req.data.token);
-    redirect("/");
+    redirect(`/${locale}`);
   }
   return { message: "Your email format is not true", error: true };
 }

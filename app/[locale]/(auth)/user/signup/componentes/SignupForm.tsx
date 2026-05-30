@@ -24,7 +24,7 @@ export default function SignupForm({ role }: SignupFormProps) {
     // Add role from props
     formData.append("role", role);
 
-    const response = await register(formData);
+    const response = await register(formData, locale);
 
     if (response.success) {
       setMessage("Registration successful!");

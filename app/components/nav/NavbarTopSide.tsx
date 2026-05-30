@@ -1,36 +1,23 @@
 "use client";
 
 import { getProfile } from "@/action/apiAction";
-import { useTranslations, useLocale } from "next-intl";
+import { Profile } from "@/model/auth";
+import { useLocale } from "next-intl";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function NavbarTopSide() {
-  const t = useTranslations("MenuPage");
-  const pathname = usePathname();
   const locale = useLocale();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Normalize path (remove locale prefix)
-  const normalizedPath =
-    pathname.replace(`/${locale}`, "").replace(/\/$/, "") || "/";
-
-  const isActive = (path: string) => normalizedPath === path;
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const profile = await getProfile(); // Call the API
-        console.log("Profile data:", profile);
-        if (profile != null) {
-          setIsAuthenticated(true); // user is logged in
-        } else {
-          setIsAuthenticated(false); // not logged in
-        }
+        const profileData = await getProfile();
+        setProfile(profileData ?? null);
       } catch (error) {
         console.error("Failed to fetch profile:", error);
-        setIsAuthenticated(false);
+        setProfile(null);
       }
     }
 
@@ -42,7 +29,14 @@ export default function NavbarTopSide() {
       <h1 className="text-xl font-bold">ServiceHub</h1>
 
       <div>
-        {!isAuthenticated ? (
+        {profile ? (
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-slate-500 sm:inline">Welcome</span>
+            <span className="rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-slate-900">
+              {profile.name || profile.email}
+            </span>
+          </div>
+        ) : (
           <>
             <Link
               href={`/${locale}/user/signup/client`}
@@ -57,10 +51,6 @@ export default function NavbarTopSide() {
             >
               Sign In
             </Link>
-          </>
-        ) : (
-          <>
-            <div></div>
           </>
         )}
       </div>

@@ -20,7 +20,7 @@ export default function SigninForm() {
 
     const formData = new FormData(e.currentTarget);
 
-    const response = await login(formData);
+    const response = await login(formData, locale);
 
     if (response.error) {
       setMessage(response.message);
