@@ -219,7 +219,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-3 py-5 text-slate-900 sm:px-4 sm:py-8 md:px-10">
+    <div className="px-3 py-5 text-slate-900 sm:px-4 sm:py-8 md:px-8">
       <section className="mx-auto w-full max-w-5xl">
         <div className="mb-6 sm:mb-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -312,7 +312,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5">
+            <div id="services" className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5">
               <label
                 htmlFor="service-selector"
                 className="text-base font-semibold text-slate-900"
@@ -568,6 +568,6 @@ export default function ProfilePage() {
           </aside>
         </form>
       </section>
-    </main>
+    </div>
   );
 }
