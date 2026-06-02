@@ -8,17 +8,20 @@ import {
   Car,
   Check,
   ChevronDown,
+  ImagePlus,
   Laptop,
   Palette,
   Send,
   Sparkles,
   SprayCan,
   Truck,
+  UploadCloud,
   Wrench,
+  X,
   Zap,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const MapViewLocation = dynamic(
   () => import("@/app/components/general/MapViewLocation"),
@@ -45,6 +48,12 @@ type Service = {
 type ServiceTypePrice = {
   min: string;
   max: string;
+};
+
+type UploadedPreview = {
+  id: string;
+  file: File;
+  previewUrl: string;
 };
 
 const services: Service[] = [
@@ -151,12 +160,45 @@ export default function ProfilePage() {
     [services[0].items[0]]: { min: "", max: "" },
   });
   const [description, setDescription] = useState("");
+  const [logo, setLogo] = useState<UploadedPreview | null>(null);
+  const [servicePhotos, setServicePhotos] = useState<Record<string, UploadedPreview[]>>({});
+  const logoRef = useRef<UploadedPreview | null>(null);
+  const servicePhotosRef = useRef<Record<string, UploadedPreview[]>>({});
 
   const selectedService = useMemo(
     () => services.find((service) => service.id === selectedServiceId) ?? services[0],
     [selectedServiceId]
   );
   const SelectedServiceIcon = selectedService.icon;
+  const selectedServicePhotos = servicePhotos[selectedServiceId] ?? [];
+
+  useEffect(() => {
+    logoRef.current = logo;
+  }, [logo]);
+
+  useEffect(() => {
+    servicePhotosRef.current = servicePhotos;
+  }, [servicePhotos]);
+
+  useEffect(() => {
+    return () => {
+      if (logoRef.current) {
+        URL.revokeObjectURL(logoRef.current.previewUrl);
+      }
+
+      Object.values(servicePhotosRef.current).forEach((photos) => {
+        photos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
+      });
+    };
+  }, []);
+
+  function createImagePreview(file: File): UploadedPreview {
+    return {
+      id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+    };
+  }
 
   function handleServiceChange(service: Service) {
     setSelectedServiceId(service.id);
@@ -201,6 +243,69 @@ export default function ProfilePage() {
     }));
   }
 
+  function handleLogoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    setLogo((currentLogo) => {
+      if (currentLogo) {
+        URL.revokeObjectURL(currentLogo.previewUrl);
+      }
+
+      return createImagePreview(file);
+    });
+  }
+
+  function handleServicePhotosChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+
+    if (files.length === 0) return;
+
+    setServicePhotos((currentPhotosByService) => {
+      const currentPhotos = currentPhotosByService[selectedServiceId] ?? [];
+      const remainingSlots = Math.max(0, 3 - currentPhotos.length);
+      const nextPhotos = files.slice(0, remainingSlots).map(createImagePreview);
+
+      if (nextPhotos.length === 0) {
+        return currentPhotosByService;
+      }
+
+      return {
+        ...currentPhotosByService,
+        [selectedServiceId]: [...currentPhotos, ...nextPhotos],
+      };
+    });
+  }
+
+  function handleLogoRemove() {
+    setLogo((currentLogo) => {
+      if (currentLogo) {
+        URL.revokeObjectURL(currentLogo.previewUrl);
+      }
+
+      return null;
+    });
+  }
+
+  function handleServicePhotoRemove(photoId: string) {
+    setServicePhotos((currentPhotosByService) => {
+      const currentPhotos = currentPhotosByService[selectedServiceId] ?? [];
+      const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
+
+      if (photoToRemove) {
+        URL.revokeObjectURL(photoToRemove.previewUrl);
+      }
+
+      return {
+        ...currentPhotosByService,
+        [selectedServiceId]: currentPhotos.filter((photo) => photo.id !== photoId),
+      };
+    });
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -214,6 +319,8 @@ export default function ProfilePage() {
         minPrice: prices[item]?.min || null,
         maxPrice: prices[item]?.max || null,
       })),
+      logo: logo?.file.name ?? null,
+      servicePhotos: selectedServicePhotos.map((photo) => photo.file.name),
       description,
     });
   }
@@ -383,6 +490,124 @@ export default function ProfilePage() {
             </div>
 
             <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    Logo and service photos
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Add your company logo and up to 3 photos for {selectedService.name}.
+                  </p>
+                </div>
+                <span className="text-sm font-semibold text-slate-500">
+                  {selectedServicePhotos.length}/3 photos
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-5 lg:grid-cols-[180px_1fr]">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Company logo</p>
+                  <div className="mt-2">
+                    {logo ? (
+                      <div className="relative h-36 w-36 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                        <div
+                          aria-label={logo.file.name}
+                          className="h-full w-full bg-cover bg-center"
+                          style={{ backgroundImage: `url(${logo.previewUrl})` }}
+                        />
+                        <button
+                          type="button"
+                          aria-label="Remove logo"
+                          onClick={handleLogoRemove}
+                          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700 shadow-sm transition hover:bg-slate-100"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="company-logo"
+                        className="flex h-36 w-36 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-white"
+                      >
+                        <UploadCloud size={24} />
+                        <span className="mt-2">Upload logo</span>
+                      </label>
+                    )}
+                    <input
+                      id="company-logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoChange}
+                      className="sr-only"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-slate-700">
+                      {selectedService.name} photos
+                    </p>
+                    <label
+                      htmlFor="service-photos"
+                      className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                        selectedServicePhotos.length >= 3
+                          ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                      }`}
+                    >
+                      <ImagePlus size={17} />
+                      Add photos
+                    </label>
+                    <input
+                      id="service-photos"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      disabled={selectedServicePhotos.length >= 3}
+                      onChange={handleServicePhotosChange}
+                      className="sr-only"
+                    />
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-3 gap-2 sm:gap-3">
+                    {Array.from({ length: 3 }).map((_, index) => {
+                      const photo = selectedServicePhotos[index];
+
+                      return photo ? (
+                        <div
+                          key={photo.id}
+                          className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50"
+                        >
+                          <div
+                            aria-label={photo.file.name}
+                            className="h-full w-full bg-cover bg-center"
+                            style={{ backgroundImage: `url(${photo.previewUrl})` }}
+                          />
+                          <button
+                            type="button"
+                            aria-label="Remove service photo"
+                            onClick={() => handleServicePhotoRemove(photo.id)}
+                            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 shadow-sm transition hover:bg-slate-100"
+                          >
+                            <X size={15} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          key={`empty-photo-${index}`}
+                          className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                        >
+                          <ImagePlus size={22} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
               <label className="text-base font-semibold text-slate-900">
                 What do you need? Select one or more.
               </label>
@@ -511,6 +736,17 @@ export default function ProfilePage() {
               <div>
                 <p className="text-slate-500">Selected service</p>
                 <p className="mt-1 font-semibold text-slate-900">{selectedService.name}</p>
+              </div>
+              <div>
+                <p className="text-slate-500">Media</p>
+                <div className="mt-2 space-y-2">
+                  <p className="font-semibold text-slate-900">
+                    Logo: {logo?.file.name || "No logo selected"}
+                  </p>
+                  <p className="font-semibold text-slate-900">
+                    Photos: {selectedServicePhotos.length}/3 selected
+                  </p>
+                </div>
               </div>
               <div>
                 <p className="text-slate-500">Service types</p>
