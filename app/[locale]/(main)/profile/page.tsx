@@ -2,7 +2,21 @@
 
 import AddressAutocomplete from "@/app/components/general/AddressAutocomplete";
 import type { SelectedLocation } from "@/app/components/general/MapViewLocation";
-import { Sparkles, SprayCan, Send } from "lucide-react";
+import {
+  CalendarCheck,
+  Camera,
+  Car,
+  Check,
+  ChevronDown,
+  Laptop,
+  Palette,
+  Send,
+  Sparkles,
+  SprayCan,
+  Truck,
+  Wrench,
+  Zap,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import React, { useMemo, useState } from "react";
 
@@ -19,7 +33,7 @@ const MapViewLocation = dynamic(
 );
 
 type Service = {
-  id: "beauty" | "cleaning";
+  id: string;
   name: string;
   description: string;
   items: string[];
@@ -52,6 +66,78 @@ const services: Service[] = [
     activeClass: "border-teal-500 bg-teal-50 text-teal-700",
     chipClass: "bg-teal-100 text-teal-700",
   },
+  {
+    id: "car-service",
+    name: "Car Service",
+    description: "Maintenance, repair, detailing, diagnostics, tires, and towing.",
+    items: ["Oil change", "Diagnostics", "Car wash", "Tire service", "Towing"],
+    icon: Car,
+    activeClass: "border-blue-500 bg-blue-50 text-blue-700",
+    chipClass: "bg-blue-100 text-blue-700",
+  },
+  {
+    id: "graphic-design",
+    name: "Graphic Design",
+    description: "Logos, brand kits, social posts, print materials, and UI assets.",
+    items: ["Logo design", "Brand identity", "Social media", "Print design", "UI assets"],
+    icon: Palette,
+    activeClass: "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700",
+    chipClass: "bg-fuchsia-100 text-fuchsia-700",
+  },
+  {
+    id: "plumbing",
+    name: "Plumbing",
+    description: "Leaks, pipe repair, fixtures, drains, water heaters, and installs.",
+    items: ["Leak repair", "Drain cleaning", "Fixture install", "Pipe repair", "Water heater"],
+    icon: Wrench,
+    activeClass: "border-cyan-500 bg-cyan-50 text-cyan-700",
+    chipClass: "bg-cyan-100 text-cyan-700",
+  },
+  {
+    id: "electrical",
+    name: "Electrical",
+    description: "Wiring, outlets, lighting, panels, inspections, and repairs.",
+    items: ["Wiring", "Outlet repair", "Lighting", "Panel service", "Inspection"],
+    icon: Zap,
+    activeClass: "border-amber-500 bg-amber-50 text-amber-700",
+    chipClass: "bg-amber-100 text-amber-700",
+  },
+  {
+    id: "moving",
+    name: "Moving",
+    description: "Local moves, packing, furniture assembly, delivery, and storage help.",
+    items: ["Local moving", "Packing", "Furniture assembly", "Delivery", "Storage help"],
+    icon: Truck,
+    activeClass: "border-indigo-500 bg-indigo-50 text-indigo-700",
+    chipClass: "bg-indigo-100 text-indigo-700",
+  },
+  {
+    id: "it-support",
+    name: "IT Support",
+    description: "Computer repair, setup, networks, software, backups, and troubleshooting.",
+    items: ["Computer repair", "Network setup", "Software help", "Data backup", "Troubleshooting"],
+    icon: Laptop,
+    activeClass: "border-sky-500 bg-sky-50 text-sky-700",
+    chipClass: "bg-sky-100 text-sky-700",
+  },
+  {
+    id: "photography",
+    name: "Photography",
+    description: "Portraits, products, events, editing, studio sessions, and real estate.",
+    items: ["Portraits", "Product photos", "Event photos", "Photo editing", "Real estate"],
+    icon: Camera,
+    activeClass: "border-violet-500 bg-violet-50 text-violet-700",
+    chipClass: "bg-violet-100 text-violet-700",
+  },
+  {
+    id: "event-planning",
+    name: "Event Planning",
+    description: "Coordination, decoration, catering support, venues, and schedules.",
+    items: ["Coordination", "Decoration", "Catering support", "Venue help", "Schedule planning"],
+    icon: CalendarCheck,
+    activeClass: "border-emerald-500 bg-emerald-50 text-emerald-700",
+    chipClass: "bg-emerald-100 text-emerald-700",
+  },
 ];
 
 export default function ProfilePage() {
@@ -59,6 +145,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState<SelectedLocation | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<Service["id"]>("beauty");
+  const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([services[0].items[0]]);
   const [prices, setPrices] = useState<Record<string, ServiceTypePrice>>({
     [services[0].items[0]]: { min: "", max: "" },
@@ -69,9 +156,11 @@ export default function ProfilePage() {
     () => services.find((service) => service.id === selectedServiceId) ?? services[0],
     [selectedServiceId]
   );
+  const SelectedServiceIcon = selectedService.icon;
 
   function handleServiceChange(service: Service) {
     setSelectedServiceId(service.id);
+    setIsServiceMenuOpen(false);
     setSelectedItems([service.items[0]]);
     setPrices({ [service.items[0]]: { min: "", max: "" } });
   }
@@ -130,24 +219,26 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 md:px-10">
+    <main className="min-h-screen bg-slate-50 px-3 py-5 text-slate-900 sm:px-4 sm:py-8 md:px-10">
       <section className="mx-auto w-full max-w-5xl">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
             Service request
           </p>
-          <h1 className="mt-2 text-3xl font-bold md:text-4xl">Choose your service</h1>
-          <p className="mt-3 max-w-2xl text-slate-600">
-            Add your company details, select Beauty or Cleaning, choose the type of work,
+          <h1 className="mt-2 text-2xl font-bold sm:text-3xl md:text-4xl">
+            Choose your service
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+            Add your company details, select a service, choose the type of work,
             and write the details professionals need before contacting you.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-[1fr_360px] lg:gap-6">
           <div className="space-y-6">
-            <div className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
               <h2 className="text-lg font-semibold text-slate-900">Company details</h2>
-              <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_300px]">
+              <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_300px]">
                 <div className="space-y-4">
                   <div>
                     <label
@@ -195,9 +286,9 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2">
+                <div className="min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2">
                   <MapViewLocation
-                    height="240px"
+                    height="clamp(200px, 55vw, 240px)"
                     zoom={location ? 15 : 5}
                     selectedLocation={location}
                     locations={
@@ -221,43 +312,87 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              {services.map((service) => {
-                const Icon = service.icon;
-                const isActive = service.id === selectedServiceId;
+            <div className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5">
+              <label
+                htmlFor="service-selector"
+                className="text-base font-semibold text-slate-900"
+              >
+                Service category
+              </label>
+              <button
+                id="service-selector"
+                type="button"
+                aria-haspopup="listbox"
+                aria-expanded={isServiceMenuOpen}
+                onClick={() => setIsServiceMenuOpen((isOpen) => !isOpen)}
+                className={`mt-4 flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left shadow-sm transition hover:shadow-md sm:p-4 ${selectedService.activeClass}`}
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                  <SelectedServiceIcon size={22} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-semibold sm:text-lg">
+                    {selectedService.name}
+                  </span>
+                  <span className="mt-1 line-clamp-2 block text-sm leading-5 text-slate-600">
+                    {selectedService.description}
+                  </span>
+                </span>
+                <ChevronDown
+                  size={20}
+                  className={`shrink-0 transition ${isServiceMenuOpen ? "rotate-180" : ""}`}
+                />
+              </button>
 
-                return (
-                  <button
-                    key={service.id}
-                    type="button"
-                    onClick={() => handleServiceChange(service)}
-                    className={`rounded-lg border-2 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-                      isActive ? service.activeClass : "border-transparent text-slate-800"
-                    }`}
-                  >
-                    <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm">
-                      <Icon size={22} />
-                    </span>
-                    <span className="block text-xl font-semibold">{service.name}</span>
-                    <span className="mt-2 block text-sm leading-6 text-slate-600">
-                      {service.description}
-                    </span>
-                  </button>
-                );
-              })}
+              {isServiceMenuOpen && (
+                <div
+                  role="listbox"
+                  aria-labelledby="service-selector"
+                  className="absolute left-4 right-4 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-xl sm:left-5 sm:right-5"
+                >
+                  {services.map((service) => {
+                    const Icon = service.icon;
+                    const isActive = service.id === selectedServiceId;
+
+                    return (
+                      <button
+                        key={service.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isActive}
+                        onClick={() => handleServiceChange(service)}
+                        className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition hover:bg-slate-50 ${
+                          isActive ? service.activeClass : "text-slate-800"
+                        }`}
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                          <Icon size={20} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-semibold">{service.name}</span>
+                          <span className="mt-1 block text-sm leading-5 text-slate-600">
+                            {service.description}
+                          </span>
+                        </span>
+                        {isActive && <Check size={18} className="mt-1 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            <div className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
               <label className="text-base font-semibold text-slate-900">
                 What do you need? Select one or more.
               </label>
-              <div className="mt-4 flex flex-wrap gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-2 min-[420px]:flex min-[420px]:flex-wrap sm:gap-3">
                 {selectedService.items.map((item) => (
                   <button
                     key={item}
                     type="button"
                     onClick={() => handleServiceTypeToggle(item)}
-                    className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                    className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition sm:px-4 ${
                       selectedItems.includes(item)
                         ? selectedService.chipClass
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
@@ -269,7 +404,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
               <label className="text-base font-semibold text-slate-900">
                 Price range for each selected type
               </label>
@@ -277,7 +412,7 @@ export default function ProfilePage() {
               <div className="mt-4 space-y-4">
                 {selectedItems.length > 0 ? (
                   selectedItems.map((item) => (
-                    <div key={item} className="rounded-lg border border-slate-100 p-4">
+                    <div key={item} className="rounded-lg border border-slate-100 p-3 sm:p-4">
                       <p className="font-semibold text-slate-900">{item}</p>
                       <div className="mt-3 grid gap-4 sm:grid-cols-2">
                         <div>
@@ -332,7 +467,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
               <label
                 htmlFor="service-description"
                 className="text-base font-semibold text-slate-900"
@@ -352,7 +487,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <aside className="h-fit rounded-lg bg-white p-5 shadow-sm">
+          <aside className="h-fit min-w-0 rounded-lg bg-white p-4 shadow-sm sm:p-5 lg:sticky lg:top-6">
             <h2 className="text-lg font-semibold">Request summary</h2>
             <div className="mt-5 space-y-4 text-sm">
               <div>
@@ -369,7 +504,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-slate-500">Address</p>
-                <p className="mt-1 rounded-lg bg-slate-50 p-3 leading-6 text-slate-700">
+                <p className="mt-1 rounded-lg bg-slate-50 p-3 leading-6 text-slate-700 break-words [overflow-wrap:anywhere]">
                   {location?.address || "No address selected"}
                 </p>
               </div>
@@ -403,7 +538,7 @@ export default function ProfilePage() {
 
                       return (
                         <p key={item} className="font-semibold text-slate-900">
-                          {item}:{" "}
+                          <span className="break-words">{item}</span>:{" "}
                           {price?.min || price?.max
                             ? `${price.min || "0"} - ${price.max || "Any"}`
                             : "No price selected"}
@@ -417,7 +552,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-slate-500">Description</p>
-                <p className="mt-1 min-h-20 rounded-lg bg-slate-50 p-3 leading-6 text-slate-700">
+                <p className="mt-1 min-h-20 rounded-lg bg-slate-50 p-3 leading-6 text-slate-700 break-words">
                   {description || "Your description will appear here."}
                 </p>
               </div>
