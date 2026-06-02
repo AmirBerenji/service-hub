@@ -11,7 +11,7 @@ import {
 } from "@/model/auth";
 import { redirect } from "next/navigation";
 
-export async function register(formdata: FormData) {
+export async function register(formdata: FormData, locale: string = "en") {
   const register: Register = {
     email: formdata.get("email") as string,
     password: formdata.get("password") as string,
@@ -20,6 +20,8 @@ export async function register(formdata: FormData) {
     phone: formdata.get("phone") as string,
     role: formdata.get("role") as string,
   };
+
+  console.log("🔍 Register data received:", register);
 
   if (
     (typeof register.email == "undefined" && !register.email) ||
@@ -46,64 +48,25 @@ export async function register(formdata: FormData) {
       return { message: req.message, success: false };
     }
     new CookieConfig().setToken("jwt", req.data.token);
-    if (
-      req.data.user.roles.includes("nurse") ||
-      req.data.user.roles.includes("doctor")
-    ) {
-      redirect("/user/profile");
+    if (req.data.user.roles.includes("provider")) {
+      redirect(`/${locale}/profile`);
     }
-    redirect("/");
+    if (req.data.user.roles.includes("guest")) {
+      redirect(`/${locale}`);
+    }
+    if (req.data.user.roles.includes("admin")) {
+      redirect(`/${locale}/admin/dashboard`);
+    }
   }
   return { message: "Your email format is not true", success: false };
 }
 
-export async function parentregister(formdata: FormData) {
-  const register: Register = {
-    email: formdata.get("email") as string,
-    password: formdata.get("password") as string,
-    password_confirmation: formdata.get("confirmpassword") as string,
-    name: formdata.get("fullname") as string,
-    phone: formdata.get("phone") as string,
-    role: formdata.get("role") as string,
-  };
-
-  if (
-    (typeof register.email == "undefined" && !register.email) ||
-    (typeof register.password == "undefined" && !register.password) ||
-    (typeof register.password_confirmation == "undefined" &&
-      !register.password_confirmation) ||
-    (typeof register.name == "undefined" && !register.name)
-  ) {
-    return { message: "Please fill all data!!!", success: false };
-  }
-
-  if (register.password != register.password_confirmation) {
-    return {
-      message: "Password and Confirn Password is not same!!!",
-      success: false,
-    };
-  }
-
-  const result = new Validation().validateEmail(register.email);
-
-  if (result) {
-    const req = await agent.Account.register(register);
-    if (req.success == false) {
-      return { message: req.message, success: false };
-    }
-    new CookieConfig().setToken("jwt", req.data.token);
-
-    redirect("/user/profile");
-  }
-  return { message: "Your email format is not true", success: false };
-}
-
-export async function login(formdata: FormData) {
+export async function login(formdata: FormData, locale: string = "en") {
   const login: Login = {
     email: formdata.get("email") as string,
     password: formdata.get("password") as string,
   };
-
+  console.log("🔍 Login data received:", login);
   if (
     (typeof login.email == "undefined" && !login.email) ||
     (typeof login.password == "undefined" && !login.password)
@@ -113,6 +76,7 @@ export async function login(formdata: FormData) {
 
   const result = new Validation().validateEmail(login.email);
 
+  console.log("🔍 Email validation result:", result);
   if (result) {
     const req = await agent.Account.login(login);
     console.log("Login response:", req);
@@ -120,13 +84,14 @@ export async function login(formdata: FormData) {
       return { message: req.message, error: true };
     }
     new CookieConfig().setToken("jwt", req.data.token);
-    redirect("/");
+    redirect(`/${locale}`);
   }
   return { message: "Your email format is not true", error: true };
 }
 
 export async function getProfile() {
   const req = await agent.Account.getProfile();
+  console.log("getProfile response:", req);
   return req?.data;
 }
 

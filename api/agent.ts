@@ -7,11 +7,7 @@ import {
   UpdateProfile,
   UpdateProfileImage,
 } from "@/model/auth";
-import { Child, ChildFormData } from "@/model/child";
-import { Doctor, DoctorDetails, DoctorResponse } from "@/model/doctor";
 import { ApiResponse } from "@/model/general";
-import { Languages } from "@/model/language";
-import { Nanny } from "@/model/nany";
 import {
   ReviewResponse,
   ReviewsResponse,
@@ -20,8 +16,8 @@ import {
 
 import axios, { AxiosResponse } from "axios";
 
-axios.defaults.baseURL = "https://zippy.elrincondsabor.com/api/";
-//axios.defaults.baseURL = "http://127.0.0.1:8000/api/";
+//axios.defaults.baseURL = "https://zippy.elrincondsabor.com/api/";
+axios.defaults.baseURL = "http://127.0.0.1:8000/api/";
 
 axios.interceptors.request.use(
   async (config) => {
@@ -153,26 +149,6 @@ const Account = {
     requests.post("user/change-password", formdata),
 };
 
-const Location = {
-  getLocations: () => requests.get<Location>("locations"),
-};
-
-const Language = {
-  getLanguage: () => requests.get<Languages>("languages"),
-};
-
-const Nurse = {
-  addNurseProfile: (profile: Nanny) => requests.post<Nanny>("nannies", profile),
-  getNurseProfile: (value: string) =>
-    requests.getbyvalue<Profile>("nannies", value),
-  getNurseList: (value: string) =>
-    requests.getbyvalue<Nanny[]>("nannies", value),
-  getNurseById: (id: number) => requests.get<Nanny>(`nannies/${id}`),
-  getNurseByUserId: () => requests.get<Nanny>(`nannies/user/info`),
-  updateNurseProfile: (profile: Nanny) =>
-    requests.put<Nanny>("nannies/update", profile),
-};
-
 const Reviews = {
   addReview: (review: ReviewSubmission) =>
     requests.post<ReviewResponse>("reviews", review),
@@ -186,41 +162,9 @@ const Reviews = {
   deleteReview: (id: number) => requests.put<any>(`reviews/${id}/delete`, {}),
 };
 
-const DoctorApi = {
-  addDoctorProfile: (profile: Doctor) =>
-    requests.post<DoctorResponse>("doctors", profile),
-  getDoctorList: (value: string) =>
-    requests.getbyvalue<ApiResponse<DoctorDetails[]>>("doctors", value),
-
-  getDoctorProfile: (id: number) => requests.get<Profile>(`doctors/${id}`),
-
-  getDoctorById: (id: number) => requests.get<Doctor>(`doctors/${id}`),
-  getDoctorByUserId: () => requests.get<Doctor>(`doctors/user/info`),
-  updateDoctorProfile: (profile: Doctor) =>
-    requests.put<Doctor>(`doctors/${profile.id}`, profile),
-};
-
-const ChildApi = {
-  checkChildId: (childId: string) =>
-    requests.get<boolean>(`childes/checkregister/${childId}`),
-  getchildByToken: (childId: string) =>
-    requests.get<Child>(`childes/getchildbytoken/${childId}`),
-  addChildProfile: (profile: FormData) =>
-    requests.post<ChildFormData>("childes", profile),
-  getchildByuser: () => requests.get<Child[]>(`childes`),
-  getchildById: (id: number) => requests.get<Child>(`childes/${id}`),
-  updateChildProfile: (childId: number, profile: FormData) =>
-    requests.post<Child>(`childes/${childId}`, profile),
-};
-
 const agent = {
   Account,
-  Location,
-  Language,
-  Nurse,
   Reviews,
-  DoctorApi,
-  ChildApi,
 };
 
 export default agent;
