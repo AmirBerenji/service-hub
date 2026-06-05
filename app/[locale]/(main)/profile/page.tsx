@@ -1,7 +1,9 @@
 "use client";
 
+import { getallCategory } from "@/action/categoryApiAction";
 import AddressAutocomplete from "@/app/components/general/AddressAutocomplete";
 import type { SelectedLocation } from "@/app/components/general/MapViewLocation";
+import { Category } from "@/model/service";
 import {
   CalendarCheck,
   Camera,
@@ -32,7 +34,7 @@ const MapViewLocation = dynamic(
         Loading map...
       </div>
     ),
-  }
+  },
 );
 
 type Service = {
@@ -69,8 +71,15 @@ const services: Service[] = [
   {
     id: "cleaning",
     name: "Cleaning",
-    description: "Home, office, deep cleaning, carpet, windows, and move-in help.",
-    items: ["Home cleaning", "Office cleaning", "Deep cleaning", "Carpet", "Windows"],
+    description:
+      "Home, office, deep cleaning, carpet, windows, and move-in help.",
+    items: [
+      "Home cleaning",
+      "Office cleaning",
+      "Deep cleaning",
+      "Carpet",
+      "Windows",
+    ],
     icon: SprayCan,
     activeClass: "border-teal-500 bg-teal-50 text-teal-700",
     chipClass: "bg-teal-100 text-teal-700",
@@ -78,17 +87,25 @@ const services: Service[] = [
   {
     id: "car-service",
     name: "Car Service",
-    description: "Maintenance, repair, detailing, diagnostics, tires, and towing.",
+    description:
+      "Maintenance, repair, detailing, diagnostics, tires, and towing.",
     items: ["Oil change", "Diagnostics", "Car wash", "Tire service", "Towing"],
     icon: Car,
-    activeClass: "border-blue-500 bg-blue-50 text-blue-700",
-    chipClass: "bg-blue-100 text-blue-700",
+    activeClass: "border-orange-500 bg-orange-50 text-orange-700",
+    chipClass: "bg-orange-100 text-orange-700",
   },
   {
     id: "graphic-design",
     name: "Graphic Design",
-    description: "Logos, brand kits, social posts, print materials, and UI assets.",
-    items: ["Logo design", "Brand identity", "Social media", "Print design", "UI assets"],
+    description:
+      "Logos, brand kits, social posts, print materials, and UI assets.",
+    items: [
+      "Logo design",
+      "Brand identity",
+      "Social media",
+      "Print design",
+      "UI assets",
+    ],
     icon: Palette,
     activeClass: "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700",
     chipClass: "bg-fuchsia-100 text-fuchsia-700",
@@ -96,8 +113,15 @@ const services: Service[] = [
   {
     id: "plumbing",
     name: "Plumbing",
-    description: "Leaks, pipe repair, fixtures, drains, water heaters, and installs.",
-    items: ["Leak repair", "Drain cleaning", "Fixture install", "Pipe repair", "Water heater"],
+    description:
+      "Leaks, pipe repair, fixtures, drains, water heaters, and installs.",
+    items: [
+      "Leak repair",
+      "Drain cleaning",
+      "Fixture install",
+      "Pipe repair",
+      "Water heater",
+    ],
     icon: Wrench,
     activeClass: "border-cyan-500 bg-cyan-50 text-cyan-700",
     chipClass: "bg-cyan-100 text-cyan-700",
@@ -106,7 +130,13 @@ const services: Service[] = [
     id: "electrical",
     name: "Electrical",
     description: "Wiring, outlets, lighting, panels, inspections, and repairs.",
-    items: ["Wiring", "Outlet repair", "Lighting", "Panel service", "Inspection"],
+    items: [
+      "Wiring",
+      "Outlet repair",
+      "Lighting",
+      "Panel service",
+      "Inspection",
+    ],
     icon: Zap,
     activeClass: "border-amber-500 bg-amber-50 text-amber-700",
     chipClass: "bg-amber-100 text-amber-700",
@@ -114,8 +144,15 @@ const services: Service[] = [
   {
     id: "moving",
     name: "Moving",
-    description: "Local moves, packing, furniture assembly, delivery, and storage help.",
-    items: ["Local moving", "Packing", "Furniture assembly", "Delivery", "Storage help"],
+    description:
+      "Local moves, packing, furniture assembly, delivery, and storage help.",
+    items: [
+      "Local moving",
+      "Packing",
+      "Furniture assembly",
+      "Delivery",
+      "Storage help",
+    ],
     icon: Truck,
     activeClass: "border-indigo-500 bg-indigo-50 text-indigo-700",
     chipClass: "bg-indigo-100 text-indigo-700",
@@ -123,8 +160,15 @@ const services: Service[] = [
   {
     id: "it-support",
     name: "IT Support",
-    description: "Computer repair, setup, networks, software, backups, and troubleshooting.",
-    items: ["Computer repair", "Network setup", "Software help", "Data backup", "Troubleshooting"],
+    description:
+      "Computer repair, setup, networks, software, backups, and troubleshooting.",
+    items: [
+      "Computer repair",
+      "Network setup",
+      "Software help",
+      "Data backup",
+      "Troubleshooting",
+    ],
     icon: Laptop,
     activeClass: "border-sky-500 bg-sky-50 text-sky-700",
     chipClass: "bg-sky-100 text-sky-700",
@@ -132,8 +176,15 @@ const services: Service[] = [
   {
     id: "photography",
     name: "Photography",
-    description: "Portraits, products, events, editing, studio sessions, and real estate.",
-    items: ["Portraits", "Product photos", "Event photos", "Photo editing", "Real estate"],
+    description:
+      "Portraits, products, events, editing, studio sessions, and real estate.",
+    items: [
+      "Portraits",
+      "Product photos",
+      "Event photos",
+      "Photo editing",
+      "Real estate",
+    ],
     icon: Camera,
     activeClass: "border-violet-500 bg-violet-50 text-violet-700",
     chipClass: "bg-violet-100 text-violet-700",
@@ -141,8 +192,15 @@ const services: Service[] = [
   {
     id: "event-planning",
     name: "Event Planning",
-    description: "Coordination, decoration, catering support, venues, and schedules.",
-    items: ["Coordination", "Decoration", "Catering support", "Venue help", "Schedule planning"],
+    description:
+      "Coordination, decoration, catering support, venues, and schedules.",
+    items: [
+      "Coordination",
+      "Decoration",
+      "Catering support",
+      "Venue help",
+      "Schedule planning",
+    ],
     icon: CalendarCheck,
     activeClass: "border-emerald-500 bg-emerald-50 text-emerald-700",
     chipClass: "bg-emerald-100 text-emerald-700",
@@ -153,24 +211,42 @@ export default function ProfilePage() {
   const [companyName, setCompanyName] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState<SelectedLocation | null>(null);
-  const [selectedServiceId, setSelectedServiceId] = useState<Service["id"]>("beauty");
+  const [selectedServiceId, setSelectedServiceId] =
+    useState<Service["id"]>("beauty");
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([services[0].items[0]]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([
+    services[0].items[0],
+  ]);
   const [prices, setPrices] = useState<Record<string, ServiceTypePrice>>({
     [services[0].items[0]]: { min: "", max: "" },
   });
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState<UploadedPreview | null>(null);
-  const [servicePhotos, setServicePhotos] = useState<Record<string, UploadedPreview[]>>({});
+  const [servicePhotos, setServicePhotos] = useState<
+    Record<string, UploadedPreview[]>
+  >({});
   const logoRef = useRef<UploadedPreview | null>(null);
   const servicePhotosRef = useRef<Record<string, UploadedPreview[]>>({});
 
   const selectedService = useMemo(
-    () => services.find((service) => service.id === selectedServiceId) ?? services[0],
-    [selectedServiceId]
+    () =>
+      services.find((service) => service.id === selectedServiceId) ??
+      services[0],
+    [selectedServiceId],
   );
   const SelectedServiceIcon = selectedService.icon;
   const selectedServicePhotos = servicePhotos[selectedServiceId] ?? [];
+
+  const [category, setCategory] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const categories = await getallCategory();
+      console.log("Fetched categories:", categories);
+      setCategory(categories);
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     logoRef.current = logo;
@@ -231,7 +307,7 @@ export default function ProfilePage() {
   function handlePriceChange(
     item: string,
     field: keyof ServiceTypePrice,
-    value: string
+    value: string,
   ) {
     setPrices((currentPrices) => ({
       ...currentPrices,
@@ -258,7 +334,9 @@ export default function ProfilePage() {
     });
   }
 
-  function handleServicePhotosChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleServicePhotosChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
 
@@ -301,7 +379,9 @@ export default function ProfilePage() {
 
       return {
         ...currentPhotosByService,
-        [selectedServiceId]: currentPhotos.filter((photo) => photo.id !== photoId),
+        [selectedServiceId]: currentPhotos.filter(
+          (photo) => photo.id !== photoId,
+        ),
       };
     });
   }
@@ -341,10 +421,15 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-[1fr_360px] lg:gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-5 lg:grid-cols-[1fr_360px] lg:gap-6"
+        >
           <div className="space-y-6">
             <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
-              <h2 className="text-lg font-semibold text-slate-900">Company details</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Company details
+              </h2>
               <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_300px]">
                 <div className="space-y-4">
                   <div>
@@ -419,7 +504,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div id="services" className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5">
+            <div
+              id="services"
+              className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5"
+            >
               <label
                 htmlFor="service-selector"
                 className="text-base font-semibold text-slate-900"
@@ -476,12 +564,16 @@ export default function ProfilePage() {
                           <Icon size={20} />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block font-semibold">{service.name}</span>
+                          <span className="block font-semibold">
+                            {service.name}
+                          </span>
                           <span className="mt-1 block text-sm leading-5 text-slate-600">
                             {service.description}
                           </span>
                         </span>
-                        {isActive && <Check size={18} className="mt-1 shrink-0" />}
+                        {isActive && (
+                          <Check size={18} className="mt-1 shrink-0" />
+                        )}
                       </button>
                     );
                   })}
@@ -496,7 +588,8 @@ export default function ProfilePage() {
                     Logo and service photos
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Add your company logo and up to 3 photos for {selectedService.name}.
+                    Add your company logo and up to 3 photos for{" "}
+                    {selectedService.name}.
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-slate-500">
@@ -506,7 +599,9 @@ export default function ProfilePage() {
 
               <div className="mt-5 grid gap-5 lg:grid-cols-[180px_1fr]">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">Company logo</p>
+                  <p className="text-sm font-medium text-slate-700">
+                    Company logo
+                  </p>
                   <div className="mt-2">
                     {logo ? (
                       <div className="relative h-36 w-36 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
@@ -582,7 +677,9 @@ export default function ProfilePage() {
                           <div
                             aria-label={photo.file.name}
                             className="h-full w-full bg-cover bg-center"
-                            style={{ backgroundImage: `url(${photo.previewUrl})` }}
+                            style={{
+                              backgroundImage: `url(${photo.previewUrl})`,
+                            }}
                           />
                           <button
                             type="button"
@@ -637,7 +734,10 @@ export default function ProfilePage() {
               <div className="mt-4 space-y-4">
                 {selectedItems.length > 0 ? (
                   selectedItems.map((item) => (
-                    <div key={item} className="rounded-lg border border-slate-100 p-3 sm:p-4">
+                    <div
+                      key={item}
+                      className="rounded-lg border border-slate-100 p-3 sm:p-4"
+                    >
                       <p className="font-semibold text-slate-900">{item}</p>
                       <div className="mt-3 grid gap-4 sm:grid-cols-2">
                         <div>
@@ -735,7 +835,9 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-slate-500">Selected service</p>
-                <p className="mt-1 font-semibold text-slate-900">{selectedService.name}</p>
+                <p className="mt-1 font-semibold text-slate-900">
+                  {selectedService.name}
+                </p>
               </div>
               <div>
                 <p className="text-slate-500">Media</p>
@@ -761,7 +863,9 @@ export default function ProfilePage() {
                       </span>
                     ))
                   ) : (
-                    <p className="font-semibold text-slate-900">No type selected</p>
+                    <p className="font-semibold text-slate-900">
+                      No type selected
+                    </p>
                   )}
                 </div>
               </div>
@@ -782,7 +886,9 @@ export default function ProfilePage() {
                       );
                     })
                   ) : (
-                    <p className="font-semibold text-slate-900">No price selected</p>
+                    <p className="font-semibold text-slate-900">
+                      No price selected
+                    </p>
                   )}
                 </div>
               </div>

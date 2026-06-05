@@ -13,6 +13,7 @@ import {
   ReviewsResponse,
   ReviewSubmission,
 } from "@/model/review";
+import { Category } from "@/model/service";
 
 import axios, { AxiosResponse } from "axios";
 
@@ -162,9 +163,14 @@ const Reviews = {
   deleteReview: (id: number) => requests.put<any>(`reviews/${id}/delete`, {}),
 };
 
+const Services = {
+  getCategory: () => requests.get<Category[]>("category/all"),
+};
+
 const agent = {
   Account,
   Reviews,
+  Services,
 };
 
 export default agent;
