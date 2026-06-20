@@ -37,8 +37,8 @@ const MapViewLocation = dynamic(
   },
 );
 
-type Service = {
-  id: string;
+type ServiceCategory = {
+  id: number;
   name: string;
   description: string;
   items: string[];
@@ -58,168 +58,110 @@ type UploadedPreview = {
   previewUrl: string;
 };
 
-const services: Service[] = [
+const categoryStyles = [
   {
-    id: "beauty",
-    name: "Beauty",
-    description: "Hair, nails, skincare, makeup, waxing, and grooming.",
-    items: ["Hair styling", "Nails", "Skincare", "Makeup", "Waxing"],
-    icon: Sparkles,
     activeClass: "border-rose-400 bg-rose-50 text-rose-700",
     chipClass: "bg-rose-100 text-rose-700",
   },
   {
-    id: "cleaning",
-    name: "Cleaning",
-    description:
-      "Home, office, deep cleaning, carpet, windows, and move-in help.",
-    items: [
-      "Home cleaning",
-      "Office cleaning",
-      "Deep cleaning",
-      "Carpet",
-      "Windows",
-    ],
-    icon: SprayCan,
     activeClass: "border-teal-500 bg-teal-50 text-teal-700",
     chipClass: "bg-teal-100 text-teal-700",
   },
   {
-    id: "car-service",
-    name: "Car Service",
-    description:
-      "Maintenance, repair, detailing, diagnostics, tires, and towing.",
-    items: ["Oil change", "Diagnostics", "Car wash", "Tire service", "Towing"],
-    icon: Car,
     activeClass: "border-orange-500 bg-orange-50 text-orange-700",
     chipClass: "bg-orange-100 text-orange-700",
   },
   {
-    id: "graphic-design",
-    name: "Graphic Design",
-    description:
-      "Logos, brand kits, social posts, print materials, and UI assets.",
-    items: [
-      "Logo design",
-      "Brand identity",
-      "Social media",
-      "Print design",
-      "UI assets",
-    ],
-    icon: Palette,
     activeClass: "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700",
     chipClass: "bg-fuchsia-100 text-fuchsia-700",
   },
   {
-    id: "plumbing",
-    name: "Plumbing",
-    description:
-      "Leaks, pipe repair, fixtures, drains, water heaters, and installs.",
-    items: [
-      "Leak repair",
-      "Drain cleaning",
-      "Fixture install",
-      "Pipe repair",
-      "Water heater",
-    ],
-    icon: Wrench,
     activeClass: "border-cyan-500 bg-cyan-50 text-cyan-700",
     chipClass: "bg-cyan-100 text-cyan-700",
   },
   {
-    id: "electrical",
-    name: "Electrical",
-    description: "Wiring, outlets, lighting, panels, inspections, and repairs.",
-    items: [
-      "Wiring",
-      "Outlet repair",
-      "Lighting",
-      "Panel service",
-      "Inspection",
-    ],
-    icon: Zap,
     activeClass: "border-amber-500 bg-amber-50 text-amber-700",
     chipClass: "bg-amber-100 text-amber-700",
   },
   {
-    id: "moving",
-    name: "Moving",
-    description:
-      "Local moves, packing, furniture assembly, delivery, and storage help.",
-    items: [
-      "Local moving",
-      "Packing",
-      "Furniture assembly",
-      "Delivery",
-      "Storage help",
-    ],
-    icon: Truck,
     activeClass: "border-indigo-500 bg-indigo-50 text-indigo-700",
     chipClass: "bg-indigo-100 text-indigo-700",
   },
   {
-    id: "it-support",
-    name: "IT Support",
-    description:
-      "Computer repair, setup, networks, software, backups, and troubleshooting.",
-    items: [
-      "Computer repair",
-      "Network setup",
-      "Software help",
-      "Data backup",
-      "Troubleshooting",
-    ],
-    icon: Laptop,
     activeClass: "border-sky-500 bg-sky-50 text-sky-700",
     chipClass: "bg-sky-100 text-sky-700",
   },
   {
-    id: "photography",
-    name: "Photography",
-    description:
-      "Portraits, products, events, editing, studio sessions, and real estate.",
-    items: [
-      "Portraits",
-      "Product photos",
-      "Event photos",
-      "Photo editing",
-      "Real estate",
-    ],
-    icon: Camera,
     activeClass: "border-violet-500 bg-violet-50 text-violet-700",
     chipClass: "bg-violet-100 text-violet-700",
   },
   {
-    id: "event-planning",
-    name: "Event Planning",
-    description:
-      "Coordination, decoration, catering support, venues, and schedules.",
-    items: [
-      "Coordination",
-      "Decoration",
-      "Catering support",
-      "Venue help",
-      "Schedule planning",
-    ],
-    icon: CalendarCheck,
     activeClass: "border-emerald-500 bg-emerald-50 text-emerald-700",
     chipClass: "bg-emerald-100 text-emerald-700",
   },
 ];
 
+const iconMap: Record<string, React.ElementType> = {
+  beauty: Sparkles,
+  sparkles: Sparkles,
+  cleaning: SprayCan,
+  spraycan: SprayCan,
+  "spray-can": SprayCan,
+  car: Car,
+  "car-service": Car,
+  "graphic-design": Palette,
+  design: Palette,
+  palette: Palette,
+  plumbing: Wrench,
+  wrench: Wrench,
+  electrical: Zap,
+  electric: Zap,
+  zap: Zap,
+  moving: Truck,
+  truck: Truck,
+  "it-support": Laptop,
+  it: Laptop,
+  laptop: Laptop,
+  photography: Camera,
+  camera: Camera,
+  "event-planning": CalendarCheck,
+  event: CalendarCheck,
+  calendar: CalendarCheck,
+};
+
+function slugify(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+function getCategoryIcon(category: Category) {
+  const iconKey = slugify(category.icon || category.name);
+  return iconMap[iconKey] ?? Sparkles;
+}
+
+function toServiceCategory(category: Category, index: number): ServiceCategory {
+  const style = categoryStyles[index % categoryStyles.length];
+
+  return {
+    id: category.id,
+    name: category.name,
+    description: category.description,
+    items: category.services.map((service) => service.name),
+    icon: getCategoryIcon(category),
+    activeClass: category.activeClass || style.activeClass,
+    chipClass: category.chipClass || style.chipClass,
+  };
+}
+
 export default function ProfilePage() {
   const [companyName, setCompanyName] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState<SelectedLocation | null>(null);
-  const [selectedServiceId, setSelectedServiceId] =
-    useState<Service["id"]>("beauty");
+  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
+    null,
+  );
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([
-    services[0].items[0],
-  ]);
-  const [prices, setPrices] = useState<Record<string, ServiceTypePrice>>({
-    [services[0].items[0]]: { min: "", max: "" },
-  });
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [prices, setPrices] = useState<Record<string, ServiceTypePrice>>({});
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState<UploadedPreview | null>(null);
   const [servicePhotos, setServicePhotos] = useState<
@@ -227,24 +169,49 @@ export default function ProfilePage() {
   >({});
   const logoRef = useRef<UploadedPreview | null>(null);
   const servicePhotosRef = useRef<Record<string, UploadedPreview[]>>({});
+  const [category, setCategory] = useState<Category[]>([]);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
+
+  const serviceCategories = useMemo(
+    () => category.map(toServiceCategory),
+    [category],
+  );
 
   const selectedService = useMemo(
     () =>
-      services.find((service) => service.id === selectedServiceId) ??
-      services[0],
-    [selectedServiceId],
+      serviceCategories.find((service) => service.id === selectedServiceId) ??
+      serviceCategories[0] ??
+      null,
+    [selectedServiceId, serviceCategories],
   );
-  const SelectedServiceIcon = selectedService.icon;
-  const selectedServicePhotos = servicePhotos[selectedServiceId] ?? [];
-
-  const [category, setCategory] = useState<Category[]>([]);
+  const SelectedServiceIcon = selectedService?.icon ?? Sparkles;
+  const selectedServicePhotos = selectedService
+    ? (servicePhotos[selectedService.id] ?? [])
+    : [];
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const categories = await getallCategory();
-      console.log("Fetched categories:", categories);
-      setCategory(categories);
+      setIsCategoryLoading(true);
+      setCategoryError("");
+
+      try {
+        const categories = await getallCategory();
+        const firstCategory = categories[0];
+        const firstService = firstCategory?.services[0]?.name;
+
+        setCategory(categories);
+        setSelectedServiceId(firstCategory?.id ?? null);
+        setSelectedItems(firstService ? [firstService] : []);
+        setPrices(firstService ? { [firstService]: { min: "", max: "" } } : {});
+      } catch (error) {
+        console.error("Category retrieval failed:", error);
+        setCategoryError("Unable to load service categories.");
+      } finally {
+        setIsCategoryLoading(false);
+      }
     };
+
     fetchCategories();
   }, []);
 
@@ -276,11 +243,13 @@ export default function ProfilePage() {
     };
   }
 
-  function handleServiceChange(service: Service) {
+  function handleServiceChange(service: ServiceCategory) {
+    const firstItem = service.items[0];
+
     setSelectedServiceId(service.id);
     setIsServiceMenuOpen(false);
-    setSelectedItems([service.items[0]]);
-    setPrices({ [service.items[0]]: { min: "", max: "" } });
+    setSelectedItems(firstItem ? [firstItem] : []);
+    setPrices(firstItem ? { [firstItem]: { min: "", max: "" } } : {});
   }
 
   function handleServiceTypeToggle(item: string) {
@@ -341,9 +310,10 @@ export default function ProfilePage() {
     event.target.value = "";
 
     if (files.length === 0) return;
+    if (!selectedService) return;
 
     setServicePhotos((currentPhotosByService) => {
-      const currentPhotos = currentPhotosByService[selectedServiceId] ?? [];
+      const currentPhotos = currentPhotosByService[selectedService.id] ?? [];
       const remainingSlots = Math.max(0, 3 - currentPhotos.length);
       const nextPhotos = files.slice(0, remainingSlots).map(createImagePreview);
 
@@ -353,7 +323,7 @@ export default function ProfilePage() {
 
       return {
         ...currentPhotosByService,
-        [selectedServiceId]: [...currentPhotos, ...nextPhotos],
+        [selectedService.id]: [...currentPhotos, ...nextPhotos],
       };
     });
   }
@@ -369,8 +339,10 @@ export default function ProfilePage() {
   }
 
   function handleServicePhotoRemove(photoId: string) {
+    if (!selectedService) return;
+
     setServicePhotos((currentPhotosByService) => {
-      const currentPhotos = currentPhotosByService[selectedServiceId] ?? [];
+      const currentPhotos = currentPhotosByService[selectedService.id] ?? [];
       const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
 
       if (photoToRemove) {
@@ -379,7 +351,7 @@ export default function ProfilePage() {
 
       return {
         ...currentPhotosByService,
-        [selectedServiceId]: currentPhotos.filter(
+        [selectedService.id]: currentPhotos.filter(
           (photo) => photo.id !== photoId,
         ),
       };
@@ -393,7 +365,7 @@ export default function ProfilePage() {
       companyName,
       phone,
       location,
-      service: selectedService.name,
+      service: selectedService?.name ?? null,
       serviceTypes: selectedItems.map((item) => ({
         name: item,
         minPrice: prices[item]?.min || null,
@@ -420,6 +392,16 @@ export default function ProfilePage() {
             and write the details professionals need before contacting you.
           </p>
         </div>
+        {/* <div>
+          {category.map((item) => (
+            <div key={item.id}>
+              <h3 className="text-lg font-semibold text-slate-900">
+                {item.name}
+              </h3>
+              <p className="text-sm text-slate-600">{item.description}</p>
+            </div>
+          ))}
+        </div> */}
 
         <form
           onSubmit={handleSubmit}
@@ -519,18 +501,27 @@ export default function ProfilePage() {
                 type="button"
                 aria-haspopup="listbox"
                 aria-expanded={isServiceMenuOpen}
+                disabled={isCategoryLoading || serviceCategories.length === 0}
                 onClick={() => setIsServiceMenuOpen((isOpen) => !isOpen)}
-                className={`mt-4 flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left shadow-sm transition hover:shadow-md sm:p-4 ${selectedService.activeClass}`}
+                className={`mt-4 flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left shadow-sm transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70 sm:p-4 ${
+                  selectedService?.activeClass ??
+                  "border-slate-200 bg-slate-50 text-slate-600"
+                }`}
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                   <SelectedServiceIcon size={22} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-base font-semibold sm:text-lg">
-                    {selectedService.name}
+                    {selectedService?.name ??
+                      (isCategoryLoading
+                        ? "Loading categories..."
+                        : "No service categories")}
                   </span>
                   <span className="mt-1 line-clamp-2 block text-sm leading-5 text-slate-600">
-                    {selectedService.description}
+                    {selectedService?.description ??
+                      categoryError ??
+                      "Service categories will appear here."}
                   </span>
                 </span>
                 <ChevronDown
@@ -545,7 +536,7 @@ export default function ProfilePage() {
                   aria-labelledby="service-selector"
                   className="absolute left-4 right-4 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-xl sm:left-5 sm:right-5"
                 >
-                  {services.map((service) => {
+                  {serviceCategories.map((service) => {
                     const Icon = service.icon;
                     const isActive = service.id === selectedServiceId;
 
@@ -589,7 +580,7 @@ export default function ProfilePage() {
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
                     Add your company logo and up to 3 photos for{" "}
-                    {selectedService.name}.
+                    {selectedService?.name ?? "the selected service"}.
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-slate-500">
@@ -641,12 +632,12 @@ export default function ProfilePage() {
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium text-slate-700">
-                      {selectedService.name} photos
+                      {selectedService?.name ?? "Service"} photos
                     </p>
                     <label
                       htmlFor="service-photos"
                       className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                        selectedServicePhotos.length >= 3
+                        !selectedService || selectedServicePhotos.length >= 3
                           ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400"
                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                       }`}
@@ -659,7 +650,7 @@ export default function ProfilePage() {
                       type="file"
                       accept="image/*"
                       multiple
-                      disabled={selectedServicePhotos.length >= 3}
+                      disabled={!selectedService || selectedServicePhotos.length >= 3}
                       onChange={handleServicePhotosChange}
                       className="sr-only"
                     />
@@ -709,20 +700,28 @@ export default function ProfilePage() {
                 What do you need? Select one or more.
               </label>
               <div className="mt-4 grid grid-cols-2 gap-2 min-[420px]:flex min-[420px]:flex-wrap sm:gap-3">
-                {selectedService.items.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => handleServiceTypeToggle(item)}
-                    className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition sm:px-4 ${
-                      selectedItems.includes(item)
-                        ? selectedService.chipClass
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+                {selectedService && selectedService.items.length > 0 ? (
+                  selectedService.items.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => handleServiceTypeToggle(item)}
+                      className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition sm:px-4 ${
+                        selectedItems.includes(item)
+                          ? selectedService.chipClass
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))
+                ) : (
+                  <p className="col-span-2 rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+                    {isCategoryLoading
+                      ? "Loading service types..."
+                      : "No service types are available for this category."}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -836,7 +835,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-slate-500">Selected service</p>
                 <p className="mt-1 font-semibold text-slate-900">
-                  {selectedService.name}
+                  {selectedService?.name ?? "No service selected"}
                 </p>
               </div>
               <div>
@@ -857,7 +856,10 @@ export default function ProfilePage() {
                     selectedItems.map((item) => (
                       <span
                         key={item}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${selectedService.chipClass}`}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          selectedService?.chipClass ??
+                          "bg-slate-100 text-slate-700"
+                        }`}
                       >
                         {item}
                       </span>

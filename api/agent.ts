@@ -164,7 +164,7 @@ const Reviews = {
 };
 
 const Services = {
-  getCategory: () => requests.get<Category[]>("category/all"),
+  getCategory: () => requests.get<ApiResponse<Category> | Category[]>("category/all"),
 };
 
 const agent = {
