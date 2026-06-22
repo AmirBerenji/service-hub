@@ -1,7 +1,10 @@
 "use client";
 
+import { addBusiness } from "@/action/businessApiAction";
+import { getallCategory } from "@/action/categoryApiAction";
 import AddressAutocomplete from "@/app/components/general/AddressAutocomplete";
 import type { SelectedLocation } from "@/app/components/general/MapViewLocation";
+import { Category, Service } from "@/model/service";
 import {
   CalendarCheck,
   Camera,
@@ -32,14 +35,14 @@ const MapViewLocation = dynamic(
         Loading map...
       </div>
     ),
-  }
+  },
 );
 
-type Service = {
-  id: string;
+type ServiceCategory = {
+  id: number;
   name: string;
   description: string;
-  items: string[];
+  items: Service[];
   icon: React.ElementType;
   activeClass: string;
   chipClass: string;
@@ -56,121 +59,172 @@ type UploadedPreview = {
   previewUrl: string;
 };
 
-const services: Service[] = [
+const categoryStyles = [
   {
-    id: "beauty",
-    name: "Beauty",
-    description: "Hair, nails, skincare, makeup, waxing, and grooming.",
-    items: ["Hair styling", "Nails", "Skincare", "Makeup", "Waxing"],
-    icon: Sparkles,
     activeClass: "border-rose-400 bg-rose-50 text-rose-700",
     chipClass: "bg-rose-100 text-rose-700",
   },
   {
-    id: "cleaning",
-    name: "Cleaning",
-    description: "Home, office, deep cleaning, carpet, windows, and move-in help.",
-    items: ["Home cleaning", "Office cleaning", "Deep cleaning", "Carpet", "Windows"],
-    icon: SprayCan,
     activeClass: "border-teal-500 bg-teal-50 text-teal-700",
     chipClass: "bg-teal-100 text-teal-700",
   },
   {
-    id: "car-service",
-    name: "Car Service",
-    description: "Maintenance, repair, detailing, diagnostics, tires, and towing.",
-    items: ["Oil change", "Diagnostics", "Car wash", "Tire service", "Towing"],
-    icon: Car,
-    activeClass: "border-blue-500 bg-blue-50 text-blue-700",
-    chipClass: "bg-blue-100 text-blue-700",
+    activeClass: "border-orange-500 bg-orange-50 text-orange-700",
+    chipClass: "bg-orange-100 text-orange-700",
   },
   {
-    id: "graphic-design",
-    name: "Graphic Design",
-    description: "Logos, brand kits, social posts, print materials, and UI assets.",
-    items: ["Logo design", "Brand identity", "Social media", "Print design", "UI assets"],
-    icon: Palette,
     activeClass: "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700",
     chipClass: "bg-fuchsia-100 text-fuchsia-700",
   },
   {
-    id: "plumbing",
-    name: "Plumbing",
-    description: "Leaks, pipe repair, fixtures, drains, water heaters, and installs.",
-    items: ["Leak repair", "Drain cleaning", "Fixture install", "Pipe repair", "Water heater"],
-    icon: Wrench,
     activeClass: "border-cyan-500 bg-cyan-50 text-cyan-700",
     chipClass: "bg-cyan-100 text-cyan-700",
   },
   {
-    id: "electrical",
-    name: "Electrical",
-    description: "Wiring, outlets, lighting, panels, inspections, and repairs.",
-    items: ["Wiring", "Outlet repair", "Lighting", "Panel service", "Inspection"],
-    icon: Zap,
     activeClass: "border-amber-500 bg-amber-50 text-amber-700",
     chipClass: "bg-amber-100 text-amber-700",
   },
   {
-    id: "moving",
-    name: "Moving",
-    description: "Local moves, packing, furniture assembly, delivery, and storage help.",
-    items: ["Local moving", "Packing", "Furniture assembly", "Delivery", "Storage help"],
-    icon: Truck,
     activeClass: "border-indigo-500 bg-indigo-50 text-indigo-700",
     chipClass: "bg-indigo-100 text-indigo-700",
   },
   {
-    id: "it-support",
-    name: "IT Support",
-    description: "Computer repair, setup, networks, software, backups, and troubleshooting.",
-    items: ["Computer repair", "Network setup", "Software help", "Data backup", "Troubleshooting"],
-    icon: Laptop,
     activeClass: "border-sky-500 bg-sky-50 text-sky-700",
     chipClass: "bg-sky-100 text-sky-700",
   },
   {
-    id: "photography",
-    name: "Photography",
-    description: "Portraits, products, events, editing, studio sessions, and real estate.",
-    items: ["Portraits", "Product photos", "Event photos", "Photo editing", "Real estate"],
-    icon: Camera,
     activeClass: "border-violet-500 bg-violet-50 text-violet-700",
     chipClass: "bg-violet-100 text-violet-700",
   },
   {
-    id: "event-planning",
-    name: "Event Planning",
-    description: "Coordination, decoration, catering support, venues, and schedules.",
-    items: ["Coordination", "Decoration", "Catering support", "Venue help", "Schedule planning"],
-    icon: CalendarCheck,
     activeClass: "border-emerald-500 bg-emerald-50 text-emerald-700",
     chipClass: "bg-emerald-100 text-emerald-700",
   },
 ];
 
+const iconMap: Record<string, React.ElementType> = {
+  beauty: Sparkles,
+  sparkles: Sparkles,
+  cleaning: SprayCan,
+  spraycan: SprayCan,
+  "spray-can": SprayCan,
+  car: Car,
+  "car-service": Car,
+  "graphic-design": Palette,
+  design: Palette,
+  palette: Palette,
+  plumbing: Wrench,
+  wrench: Wrench,
+  electrical: Zap,
+  electric: Zap,
+  zap: Zap,
+  moving: Truck,
+  truck: Truck,
+  "it-support": Laptop,
+  it: Laptop,
+  laptop: Laptop,
+  photography: Camera,
+  camera: Camera,
+  "event-planning": CalendarCheck,
+  event: CalendarCheck,
+  calendar: CalendarCheck,
+};
+
+function slugify(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+function getCategoryIcon(category: Category) {
+  const iconKey = slugify(category.icon || category.name);
+  return iconMap[iconKey] ?? Sparkles;
+}
+
+function toServiceCategory(category: Category, index: number): ServiceCategory {
+  const style = categoryStyles[index % categoryStyles.length];
+
+  return {
+    id: category.id,
+    name: category.name,
+    description: category.description,
+    items: category.services,
+    icon: getCategoryIcon(category),
+    activeClass: category.activeClass || style.activeClass,
+    chipClass: category.chipClass || style.chipClass,
+  };
+}
+
 export default function ProfilePage() {
   const [companyName, setCompanyName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [location, setLocation] = useState<SelectedLocation | null>(null);
-  const [selectedServiceId, setSelectedServiceId] = useState<Service["id"]>("beauty");
+  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
+    null,
+  );
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([services[0].items[0]]);
-  const [prices, setPrices] = useState<Record<string, ServiceTypePrice>>({
-    [services[0].items[0]]: { min: "", max: "" },
-  });
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [prices, setPrices] = useState<Record<number, ServiceTypePrice>>({});
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState<UploadedPreview | null>(null);
-  const [servicePhotos, setServicePhotos] = useState<Record<string, UploadedPreview[]>>({});
+  const [servicePhotos, setServicePhotos] = useState<
+    Record<string, UploadedPreview[]>
+  >({});
   const logoRef = useRef<UploadedPreview | null>(null);
   const servicePhotosRef = useRef<Record<string, UploadedPreview[]>>({});
+  const [category, setCategory] = useState<Category[]>([]);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
+
+  const serviceCategories = useMemo(
+    () => category.map(toServiceCategory),
+    [category],
+  );
 
   const selectedService = useMemo(
-    () => services.find((service) => service.id === selectedServiceId) ?? services[0],
-    [selectedServiceId]
+    () =>
+      serviceCategories.find((service) => service.id === selectedServiceId) ??
+      serviceCategories[0] ??
+      null,
+    [selectedServiceId, serviceCategories],
   );
-  const SelectedServiceIcon = selectedService.icon;
-  const selectedServicePhotos = servicePhotos[selectedServiceId] ?? [];
+  const SelectedServiceIcon = selectedService?.icon ?? Sparkles;
+  const selectedServicePhotos = selectedService
+    ? (servicePhotos[selectedService.id] ?? [])
+    : [];
+  const selectedServiceItems = useMemo(
+    () =>
+      selectedService?.items.filter((item) => selectedItems.includes(item.id)) ??
+      [],
+    [selectedItems, selectedService],
+  );
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsCategoryLoading(true);
+      setCategoryError("");
+
+      try {
+        const categories = await getallCategory();
+        const firstCategory = categories[0];
+        const firstService = firstCategory?.services[0];
+
+        setCategory(categories);
+        setSelectedServiceId(firstCategory?.id ?? null);
+        setSelectedItems(firstService ? [firstService.id] : []);
+        setPrices(firstService ? { [firstService.id]: { min: "", max: "" } } : {});
+      } catch (error) {
+        console.error("Category retrieval failed:", error);
+        setCategoryError("Unable to load service categories.");
+      } finally {
+        setIsCategoryLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     logoRef.current = logo;
@@ -200,44 +254,46 @@ export default function ProfilePage() {
     };
   }
 
-  function handleServiceChange(service: Service) {
+  function handleServiceChange(service: ServiceCategory) {
+    const firstItem = service.items[0];
+
     setSelectedServiceId(service.id);
     setIsServiceMenuOpen(false);
-    setSelectedItems([service.items[0]]);
-    setPrices({ [service.items[0]]: { min: "", max: "" } });
+    setSelectedItems(firstItem ? [firstItem.id] : []);
+    setPrices(firstItem ? { [firstItem.id]: { min: "", max: "" } } : {});
   }
 
-  function handleServiceTypeToggle(item: string) {
+  function handleServiceTypeToggle(item: Service) {
     setSelectedItems((currentItems) => {
-      if (currentItems.includes(item)) {
+      if (currentItems.includes(item.id)) {
         setPrices((currentPrices) => {
           const nextPrices = { ...currentPrices };
-          delete nextPrices[item];
+          delete nextPrices[item.id];
           return nextPrices;
         });
 
-        return currentItems.filter((currentItem) => currentItem !== item);
+        return currentItems.filter((currentItem) => currentItem !== item.id);
       }
 
       setPrices((currentPrices) => ({
         ...currentPrices,
-        [item]: currentPrices[item] ?? { min: "", max: "" },
+        [item.id]: currentPrices[item.id] ?? { min: "", max: "" },
       }));
 
-      return [...currentItems, item];
+      return [...currentItems, item.id];
     });
   }
 
   function handlePriceChange(
-    item: string,
+    itemId: number,
     field: keyof ServiceTypePrice,
-    value: string
+    value: string,
   ) {
     setPrices((currentPrices) => ({
       ...currentPrices,
-      [item]: {
-        min: currentPrices[item]?.min ?? "",
-        max: currentPrices[item]?.max ?? "",
+      [itemId]: {
+        min: currentPrices[itemId]?.min ?? "",
+        max: currentPrices[itemId]?.max ?? "",
         [field]: value,
       },
     }));
@@ -258,14 +314,17 @@ export default function ProfilePage() {
     });
   }
 
-  function handleServicePhotosChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleServicePhotosChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
 
     if (files.length === 0) return;
+    if (!selectedService) return;
 
     setServicePhotos((currentPhotosByService) => {
-      const currentPhotos = currentPhotosByService[selectedServiceId] ?? [];
+      const currentPhotos = currentPhotosByService[selectedService.id] ?? [];
       const remainingSlots = Math.max(0, 3 - currentPhotos.length);
       const nextPhotos = files.slice(0, remainingSlots).map(createImagePreview);
 
@@ -275,7 +334,7 @@ export default function ProfilePage() {
 
       return {
         ...currentPhotosByService,
-        [selectedServiceId]: [...currentPhotos, ...nextPhotos],
+        [selectedService.id]: [...currentPhotos, ...nextPhotos],
       };
     });
   }
@@ -291,8 +350,10 @@ export default function ProfilePage() {
   }
 
   function handleServicePhotoRemove(photoId: string) {
+    if (!selectedService) return;
+
     setServicePhotos((currentPhotosByService) => {
-      const currentPhotos = currentPhotosByService[selectedServiceId] ?? [];
+      const currentPhotos = currentPhotosByService[selectedService.id] ?? [];
       const photoToRemove = currentPhotos.find((photo) => photo.id === photoId);
 
       if (photoToRemove) {
@@ -301,28 +362,78 @@ export default function ProfilePage() {
 
       return {
         ...currentPhotosByService,
-        [selectedServiceId]: currentPhotos.filter((photo) => photo.id !== photoId),
+        [selectedService.id]: currentPhotos.filter(
+          (photo) => photo.id !== photoId,
+        ),
       };
     });
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    console.log({
-      companyName,
-      phone,
-      location,
-      service: selectedService.name,
-      serviceTypes: selectedItems.map((item) => ({
-        name: item,
-        minPrice: prices[item]?.min || null,
-        maxPrice: prices[item]?.max || null,
-      })),
-      logo: logo?.file.name ?? null,
-      servicePhotos: selectedServicePhotos.map((photo) => photo.file.name),
-      description,
+    setSubmitMessage("");
+    setSubmitSuccess(null);
+
+    if (!companyName || !phone || !email || !location) {
+      setSubmitSuccess(false);
+      setSubmitMessage("Please fill company name, phone, email, and address.");
+      return;
+    }
+
+    if (selectedServiceItems.length === 0) {
+      setSubmitSuccess(false);
+      setSubmitMessage("Please select at least one service type.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", companyName);
+    formData.append("phone", phone);
+    formData.append("email", email);
+    formData.append("address", location.address);
+    formData.append("lat", String(location.lat));
+    formData.append("lng", String(location.lng));
+
+    if (description) {
+      formData.append("description", description);
+    }
+
+    if (logo) {
+      formData.append("logo", logo.file);
+    }
+
+    selectedServicePhotos.forEach((photo) => {
+      formData.append("images[]", photo.file);
     });
+
+    selectedServiceItems.forEach((service, index) => {
+      const price = prices[service.id];
+
+      formData.append(`services[${index}][id]`, String(service.id));
+
+      if (price?.min) {
+        formData.append(`services[${index}][min_price]`, price.min);
+      }
+
+      if (price?.max) {
+        formData.append(`services[${index}][max_price]`, price.max);
+      }
+    });
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await addBusiness(formData);
+      setSubmitSuccess(result.success);
+      setSubmitMessage(result.message);
+    } catch (error) {
+      console.error("Business submit failed:", error);
+      setSubmitSuccess(false);
+      setSubmitMessage("Unable to add business.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -340,11 +451,26 @@ export default function ProfilePage() {
             and write the details professionals need before contacting you.
           </p>
         </div>
+        {/* <div>
+          {category.map((item) => (
+            <div key={item.id}>
+              <h3 className="text-lg font-semibold text-slate-900">
+                {item.name}
+              </h3>
+              <p className="text-sm text-slate-600">{item.description}</p>
+            </div>
+          ))}
+        </div> */}
 
-        <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-[1fr_360px] lg:gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid gap-5 lg:grid-cols-[1fr_360px] lg:gap-6"
+        >
           <div className="space-y-6">
             <div className="rounded-lg bg-white p-4 shadow-sm sm:p-5">
-              <h2 className="text-lg font-semibold text-slate-900">Company details</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Company details
+              </h2>
               <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_300px]">
                 <div className="space-y-4">
                   <div>
@@ -379,6 +505,24 @@ export default function ProfilePage() {
                       value={phone}
                       onChange={(event) => setPhone(event.target.value)}
                       placeholder="+374 00 000 000"
+                      className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="company-email"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="company-email"
+                      name="email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="info@example.com"
                       className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                   </div>
@@ -419,7 +563,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div id="services" className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5">
+            <div
+              id="services"
+              className="relative z-20 rounded-lg bg-white p-4 shadow-sm sm:p-5"
+            >
               <label
                 htmlFor="service-selector"
                 className="text-base font-semibold text-slate-900"
@@ -431,18 +578,27 @@ export default function ProfilePage() {
                 type="button"
                 aria-haspopup="listbox"
                 aria-expanded={isServiceMenuOpen}
+                disabled={isCategoryLoading || serviceCategories.length === 0}
                 onClick={() => setIsServiceMenuOpen((isOpen) => !isOpen)}
-                className={`mt-4 flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left shadow-sm transition hover:shadow-md sm:p-4 ${selectedService.activeClass}`}
+                className={`mt-4 flex w-full items-center gap-3 rounded-lg border-2 p-3 text-left shadow-sm transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-70 sm:p-4 ${
+                  selectedService?.activeClass ??
+                  "border-slate-200 bg-slate-50 text-slate-600"
+                }`}
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
                   <SelectedServiceIcon size={22} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-base font-semibold sm:text-lg">
-                    {selectedService.name}
+                    {selectedService?.name ??
+                      (isCategoryLoading
+                        ? "Loading categories..."
+                        : "No service categories")}
                   </span>
                   <span className="mt-1 line-clamp-2 block text-sm leading-5 text-slate-600">
-                    {selectedService.description}
+                    {selectedService?.description ??
+                      categoryError ??
+                      "Service categories will appear here."}
                   </span>
                 </span>
                 <ChevronDown
@@ -457,7 +613,7 @@ export default function ProfilePage() {
                   aria-labelledby="service-selector"
                   className="absolute left-4 right-4 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-xl sm:left-5 sm:right-5"
                 >
-                  {services.map((service) => {
+                  {serviceCategories.map((service) => {
                     const Icon = service.icon;
                     const isActive = service.id === selectedServiceId;
 
@@ -476,12 +632,16 @@ export default function ProfilePage() {
                           <Icon size={20} />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block font-semibold">{service.name}</span>
+                          <span className="block font-semibold">
+                            {service.name}
+                          </span>
                           <span className="mt-1 block text-sm leading-5 text-slate-600">
                             {service.description}
                           </span>
                         </span>
-                        {isActive && <Check size={18} className="mt-1 shrink-0" />}
+                        {isActive && (
+                          <Check size={18} className="mt-1 shrink-0" />
+                        )}
                       </button>
                     );
                   })}
@@ -496,7 +656,8 @@ export default function ProfilePage() {
                     Logo and service photos
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Add your company logo and up to 3 photos for {selectedService.name}.
+                    Add your company logo and up to 3 photos for{" "}
+                    {selectedService?.name ?? "the selected service"}.
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-slate-500">
@@ -506,7 +667,9 @@ export default function ProfilePage() {
 
               <div className="mt-5 grid gap-5 lg:grid-cols-[180px_1fr]">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">Company logo</p>
+                  <p className="text-sm font-medium text-slate-700">
+                    Company logo
+                  </p>
                   <div className="mt-2">
                     {logo ? (
                       <div className="relative h-36 w-36 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
@@ -546,12 +709,12 @@ export default function ProfilePage() {
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm font-medium text-slate-700">
-                      {selectedService.name} photos
+                      {selectedService?.name ?? "Service"} photos
                     </p>
                     <label
                       htmlFor="service-photos"
                       className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                        selectedServicePhotos.length >= 3
+                        !selectedService || selectedServicePhotos.length >= 3
                           ? "pointer-events-none border-slate-200 bg-slate-100 text-slate-400"
                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                       }`}
@@ -564,7 +727,7 @@ export default function ProfilePage() {
                       type="file"
                       accept="image/*"
                       multiple
-                      disabled={selectedServicePhotos.length >= 3}
+                      disabled={!selectedService || selectedServicePhotos.length >= 3}
                       onChange={handleServicePhotosChange}
                       className="sr-only"
                     />
@@ -582,7 +745,9 @@ export default function ProfilePage() {
                           <div
                             aria-label={photo.file.name}
                             className="h-full w-full bg-cover bg-center"
-                            style={{ backgroundImage: `url(${photo.previewUrl})` }}
+                            style={{
+                              backgroundImage: `url(${photo.previewUrl})`,
+                            }}
                           />
                           <button
                             type="button"
@@ -612,20 +777,28 @@ export default function ProfilePage() {
                 What do you need? Select one or more.
               </label>
               <div className="mt-4 grid grid-cols-2 gap-2 min-[420px]:flex min-[420px]:flex-wrap sm:gap-3">
-                {selectedService.items.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => handleServiceTypeToggle(item)}
-                    className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition sm:px-4 ${
-                      selectedItems.includes(item)
-                        ? selectedService.chipClass
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+                {selectedService && selectedService.items.length > 0 ? (
+                  selectedService.items.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleServiceTypeToggle(item)}
+                      className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition sm:px-4 ${
+                        selectedItems.includes(item.id)
+                          ? selectedService.chipClass
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                      }`}
+                    >
+                      {item.name}
+                    </button>
+                  ))
+                ) : (
+                  <p className="col-span-2 rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
+                    {isCategoryLoading
+                      ? "Loading service types..."
+                      : "No service types are available for this category."}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -635,26 +808,35 @@ export default function ProfilePage() {
               </label>
               <p className="mt-1 text-sm text-slate-500">Optional</p>
               <div className="mt-4 space-y-4">
-                {selectedItems.length > 0 ? (
-                  selectedItems.map((item) => (
-                    <div key={item} className="rounded-lg border border-slate-100 p-3 sm:p-4">
-                      <p className="font-semibold text-slate-900">{item}</p>
+                {selectedServiceItems.length > 0 ? (
+                  selectedServiceItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-lg border border-slate-100 p-3 sm:p-4"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {item.name}
+                      </p>
                       <div className="mt-3 grid gap-4 sm:grid-cols-2">
                         <div>
                           <label
-                            htmlFor={`${item}-min-price`}
+                            htmlFor={`service-${item.id}-min-price`}
                             className="text-sm font-medium text-slate-700"
                           >
                             Minimum price
                           </label>
                           <input
-                            id={`${item}-min-price`}
-                            name={`${item}MinPrice`}
+                            id={`service-${item.id}-min-price`}
+                            name={`service-${item.id}-min-price`}
                             type="number"
                             min="0"
-                            value={prices[item]?.min ?? ""}
+                            value={prices[item.id]?.min ?? ""}
                             onChange={(event) =>
-                              handlePriceChange(item, "min", event.target.value)
+                              handlePriceChange(
+                                item.id,
+                                "min",
+                                event.target.value,
+                              )
                             }
                             placeholder="0"
                             className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
@@ -663,19 +845,23 @@ export default function ProfilePage() {
 
                         <div>
                           <label
-                            htmlFor={`${item}-max-price`}
+                            htmlFor={`service-${item.id}-max-price`}
                             className="text-sm font-medium text-slate-700"
                           >
                             Maximum price
                           </label>
                           <input
-                            id={`${item}-max-price`}
-                            name={`${item}MaxPrice`}
+                            id={`service-${item.id}-max-price`}
+                            name={`service-${item.id}-max-price`}
                             type="number"
                             min="0"
-                            value={prices[item]?.max ?? ""}
+                            value={prices[item.id]?.max ?? ""}
                             onChange={(event) =>
-                              handlePriceChange(item, "max", event.target.value)
+                              handlePriceChange(
+                                item.id,
+                                "max",
+                                event.target.value,
+                              )
                             }
                             placeholder="500"
                             className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
@@ -728,6 +914,12 @@ export default function ProfilePage() {
                 </p>
               </div>
               <div>
+                <p className="text-slate-500">Email</p>
+                <p className="mt-1 font-semibold text-slate-900 break-words">
+                  {email || "No email"}
+                </p>
+              </div>
+              <div>
                 <p className="text-slate-500">Address</p>
                 <p className="mt-1 rounded-lg bg-slate-50 p-3 leading-6 text-slate-700 break-words [overflow-wrap:anywhere]">
                   {location?.address || "No address selected"}
@@ -735,7 +927,9 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-slate-500">Selected service</p>
-                <p className="mt-1 font-semibold text-slate-900">{selectedService.name}</p>
+                <p className="mt-1 font-semibold text-slate-900">
+                  {selectedService?.name ?? "No service selected"}
+                </p>
               </div>
               <div>
                 <p className="text-slate-500">Media</p>
@@ -751,30 +945,38 @@ export default function ProfilePage() {
               <div>
                 <p className="text-slate-500">Service types</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedItems.length > 0 ? (
-                    selectedItems.map((item) => (
+                  {selectedServiceItems.length > 0 ? (
+                    selectedServiceItems.map((item) => (
                       <span
-                        key={item}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${selectedService.chipClass}`}
+                        key={item.id}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          selectedService?.chipClass ??
+                          "bg-slate-100 text-slate-700"
+                        }`}
                       >
-                        {item}
+                        {item.name}
                       </span>
                     ))
                   ) : (
-                    <p className="font-semibold text-slate-900">No type selected</p>
+                    <p className="font-semibold text-slate-900">
+                      No type selected
+                    </p>
                   )}
                 </div>
               </div>
               <div>
                 <p className="text-slate-500">Prices</p>
                 <div className="mt-2 space-y-2">
-                  {selectedItems.length > 0 ? (
-                    selectedItems.map((item) => {
-                      const price = prices[item];
+                  {selectedServiceItems.length > 0 ? (
+                    selectedServiceItems.map((item) => {
+                      const price = prices[item.id];
 
                       return (
-                        <p key={item} className="font-semibold text-slate-900">
-                          <span className="break-words">{item}</span>:{" "}
+                        <p
+                          key={item.id}
+                          className="font-semibold text-slate-900"
+                        >
+                          <span className="break-words">{item.name}</span>:{" "}
                           {price?.min || price?.max
                             ? `${price.min || "0"} - ${price.max || "Any"}`
                             : "No price selected"}
@@ -782,7 +984,9 @@ export default function ProfilePage() {
                       );
                     })
                   ) : (
-                    <p className="font-semibold text-slate-900">No price selected</p>
+                    <p className="font-semibold text-slate-900">
+                      No price selected
+                    </p>
                   )}
                 </div>
               </div>
@@ -794,12 +998,25 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {submitMessage && (
+              <p
+                className={`mt-5 rounded-lg border p-3 text-sm font-semibold ${
+                  submitSuccess
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-rose-200 bg-rose-50 text-rose-700"
+                }`}
+              >
+                {submitMessage}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700"
+              disabled={isSubmitting}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               <Send size={18} />
-              Send request
+              {isSubmitting ? "Sending..." : "Send request"}
             </button>
           </aside>
         </form>

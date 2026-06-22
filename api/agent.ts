@@ -13,6 +13,7 @@ import {
   ReviewsResponse,
   ReviewSubmission,
 } from "@/model/review";
+import { BusinessApiResponse, Category } from "@/model/service";
 
 import axios, { AxiosResponse } from "axios";
 
@@ -162,9 +163,21 @@ const Reviews = {
   deleteReview: (id: number) => requests.put<any>(`reviews/${id}/delete`, {}),
 };
 
+const Services = {
+  getCategory: () =>
+    requests.get<ApiResponse<Category> | Category[]>("category/all"),
+};
+
+const Business = {
+  addBusiness: (business: FormData) =>
+    requests.postForm<BusinessApiResponse>("business", business),
+};
+
 const agent = {
   Account,
   Reviews,
+  Services,
+  Business,
 };
 
 export default agent;
