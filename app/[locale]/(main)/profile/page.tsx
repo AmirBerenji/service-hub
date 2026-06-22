@@ -1,9 +1,10 @@
 "use client";
 
+import { addBusiness } from "@/action/businessApiAction";
 import { getallCategory } from "@/action/categoryApiAction";
 import AddressAutocomplete from "@/app/components/general/AddressAutocomplete";
 import type { SelectedLocation } from "@/app/components/general/MapViewLocation";
-import { Category } from "@/model/service";
+import { Category, Service } from "@/model/service";
 import {
   CalendarCheck,
   Camera,
@@ -41,7 +42,7 @@ type ServiceCategory = {
   id: number;
   name: string;
   description: string;
-  items: string[];
+  items: Service[];
   icon: React.ElementType;
   activeClass: string;
   chipClass: string;
@@ -145,7 +146,7 @@ function toServiceCategory(category: Category, index: number): ServiceCategory {
     id: category.id,
     name: category.name,
     description: category.description,
-    items: category.services.map((service) => service.name),
+    items: category.services,
     icon: getCategoryIcon(category),
     activeClass: category.activeClass || style.activeClass,
     chipClass: category.chipClass || style.chipClass,
@@ -155,13 +156,14 @@ function toServiceCategory(category: Category, index: number): ServiceCategory {
 export default function ProfilePage() {
   const [companyName, setCompanyName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [location, setLocation] = useState<SelectedLocation | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
     null,
   );
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [prices, setPrices] = useState<Record<string, ServiceTypePrice>>({});
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [prices, setPrices] = useState<Record<number, ServiceTypePrice>>({});
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState<UploadedPreview | null>(null);
   const [servicePhotos, setServicePhotos] = useState<
@@ -172,6 +174,9 @@ export default function ProfilePage() {
   const [category, setCategory] = useState<Category[]>([]);
   const [isCategoryLoading, setIsCategoryLoading] = useState(true);
   const [categoryError, setCategoryError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState<boolean | null>(null);
 
   const serviceCategories = useMemo(
     () => category.map(toServiceCategory),
@@ -189,6 +194,12 @@ export default function ProfilePage() {
   const selectedServicePhotos = selectedService
     ? (servicePhotos[selectedService.id] ?? [])
     : [];
+  const selectedServiceItems = useMemo(
+    () =>
+      selectedService?.items.filter((item) => selectedItems.includes(item.id)) ??
+      [],
+    [selectedItems, selectedService],
+  );
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -198,12 +209,12 @@ export default function ProfilePage() {
       try {
         const categories = await getallCategory();
         const firstCategory = categories[0];
-        const firstService = firstCategory?.services[0]?.name;
+        const firstService = firstCategory?.services[0];
 
         setCategory(categories);
         setSelectedServiceId(firstCategory?.id ?? null);
-        setSelectedItems(firstService ? [firstService] : []);
-        setPrices(firstService ? { [firstService]: { min: "", max: "" } } : {});
+        setSelectedItems(firstService ? [firstService.id] : []);
+        setPrices(firstService ? { [firstService.id]: { min: "", max: "" } } : {});
       } catch (error) {
         console.error("Category retrieval failed:", error);
         setCategoryError("Unable to load service categories.");
@@ -248,41 +259,41 @@ export default function ProfilePage() {
 
     setSelectedServiceId(service.id);
     setIsServiceMenuOpen(false);
-    setSelectedItems(firstItem ? [firstItem] : []);
-    setPrices(firstItem ? { [firstItem]: { min: "", max: "" } } : {});
+    setSelectedItems(firstItem ? [firstItem.id] : []);
+    setPrices(firstItem ? { [firstItem.id]: { min: "", max: "" } } : {});
   }
 
-  function handleServiceTypeToggle(item: string) {
+  function handleServiceTypeToggle(item: Service) {
     setSelectedItems((currentItems) => {
-      if (currentItems.includes(item)) {
+      if (currentItems.includes(item.id)) {
         setPrices((currentPrices) => {
           const nextPrices = { ...currentPrices };
-          delete nextPrices[item];
+          delete nextPrices[item.id];
           return nextPrices;
         });
 
-        return currentItems.filter((currentItem) => currentItem !== item);
+        return currentItems.filter((currentItem) => currentItem !== item.id);
       }
 
       setPrices((currentPrices) => ({
         ...currentPrices,
-        [item]: currentPrices[item] ?? { min: "", max: "" },
+        [item.id]: currentPrices[item.id] ?? { min: "", max: "" },
       }));
 
-      return [...currentItems, item];
+      return [...currentItems, item.id];
     });
   }
 
   function handlePriceChange(
-    item: string,
+    itemId: number,
     field: keyof ServiceTypePrice,
     value: string,
   ) {
     setPrices((currentPrices) => ({
       ...currentPrices,
-      [item]: {
-        min: currentPrices[item]?.min ?? "",
-        max: currentPrices[item]?.max ?? "",
+      [itemId]: {
+        min: currentPrices[itemId]?.min ?? "",
+        max: currentPrices[itemId]?.max ?? "",
         [field]: value,
       },
     }));
@@ -358,23 +369,71 @@ export default function ProfilePage() {
     });
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    console.log({
-      companyName,
-      phone,
-      location,
-      service: selectedService?.name ?? null,
-      serviceTypes: selectedItems.map((item) => ({
-        name: item,
-        minPrice: prices[item]?.min || null,
-        maxPrice: prices[item]?.max || null,
-      })),
-      logo: logo?.file.name ?? null,
-      servicePhotos: selectedServicePhotos.map((photo) => photo.file.name),
-      description,
+    setSubmitMessage("");
+    setSubmitSuccess(null);
+
+    if (!companyName || !phone || !email || !location) {
+      setSubmitSuccess(false);
+      setSubmitMessage("Please fill company name, phone, email, and address.");
+      return;
+    }
+
+    if (selectedServiceItems.length === 0) {
+      setSubmitSuccess(false);
+      setSubmitMessage("Please select at least one service type.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", companyName);
+    formData.append("phone", phone);
+    formData.append("email", email);
+    formData.append("address", location.address);
+    formData.append("lat", String(location.lat));
+    formData.append("lng", String(location.lng));
+
+    if (description) {
+      formData.append("description", description);
+    }
+
+    if (logo) {
+      formData.append("logo", logo.file);
+    }
+
+    selectedServicePhotos.forEach((photo) => {
+      formData.append("images[]", photo.file);
     });
+
+    selectedServiceItems.forEach((service, index) => {
+      const price = prices[service.id];
+
+      formData.append(`services[${index}][id]`, String(service.id));
+
+      if (price?.min) {
+        formData.append(`services[${index}][min_price]`, price.min);
+      }
+
+      if (price?.max) {
+        formData.append(`services[${index}][max_price]`, price.max);
+      }
+    });
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await addBusiness(formData);
+      setSubmitSuccess(result.success);
+      setSubmitMessage(result.message);
+    } catch (error) {
+      console.error("Business submit failed:", error);
+      setSubmitSuccess(false);
+      setSubmitMessage("Unable to add business.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -446,6 +505,24 @@ export default function ProfilePage() {
                       value={phone}
                       onChange={(event) => setPhone(event.target.value)}
                       placeholder="+374 00 000 000"
+                      className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="company-email"
+                      className="text-sm font-medium text-slate-700"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="company-email"
+                      name="email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="info@example.com"
                       className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                   </div>
@@ -703,16 +780,16 @@ export default function ProfilePage() {
                 {selectedService && selectedService.items.length > 0 ? (
                   selectedService.items.map((item) => (
                     <button
-                      key={item}
+                      key={item.id}
                       type="button"
                       onClick={() => handleServiceTypeToggle(item)}
                       className={`min-h-10 rounded-full border px-3 py-2 text-sm font-medium transition sm:px-4 ${
-                        selectedItems.includes(item)
+                        selectedItems.includes(item.id)
                           ? selectedService.chipClass
                           : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                       }`}
                     >
-                      {item}
+                      {item.name}
                     </button>
                   ))
                 ) : (
@@ -731,29 +808,35 @@ export default function ProfilePage() {
               </label>
               <p className="mt-1 text-sm text-slate-500">Optional</p>
               <div className="mt-4 space-y-4">
-                {selectedItems.length > 0 ? (
-                  selectedItems.map((item) => (
+                {selectedServiceItems.length > 0 ? (
+                  selectedServiceItems.map((item) => (
                     <div
-                      key={item}
+                      key={item.id}
                       className="rounded-lg border border-slate-100 p-3 sm:p-4"
                     >
-                      <p className="font-semibold text-slate-900">{item}</p>
+                      <p className="font-semibold text-slate-900">
+                        {item.name}
+                      </p>
                       <div className="mt-3 grid gap-4 sm:grid-cols-2">
                         <div>
                           <label
-                            htmlFor={`${item}-min-price`}
+                            htmlFor={`service-${item.id}-min-price`}
                             className="text-sm font-medium text-slate-700"
                           >
                             Minimum price
                           </label>
                           <input
-                            id={`${item}-min-price`}
-                            name={`${item}MinPrice`}
+                            id={`service-${item.id}-min-price`}
+                            name={`service-${item.id}-min-price`}
                             type="number"
                             min="0"
-                            value={prices[item]?.min ?? ""}
+                            value={prices[item.id]?.min ?? ""}
                             onChange={(event) =>
-                              handlePriceChange(item, "min", event.target.value)
+                              handlePriceChange(
+                                item.id,
+                                "min",
+                                event.target.value,
+                              )
                             }
                             placeholder="0"
                             className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
@@ -762,19 +845,23 @@ export default function ProfilePage() {
 
                         <div>
                           <label
-                            htmlFor={`${item}-max-price`}
+                            htmlFor={`service-${item.id}-max-price`}
                             className="text-sm font-medium text-slate-700"
                           >
                             Maximum price
                           </label>
                           <input
-                            id={`${item}-max-price`}
-                            name={`${item}MaxPrice`}
+                            id={`service-${item.id}-max-price`}
+                            name={`service-${item.id}-max-price`}
                             type="number"
                             min="0"
-                            value={prices[item]?.max ?? ""}
+                            value={prices[item.id]?.max ?? ""}
                             onChange={(event) =>
-                              handlePriceChange(item, "max", event.target.value)
+                              handlePriceChange(
+                                item.id,
+                                "max",
+                                event.target.value,
+                              )
                             }
                             placeholder="500"
                             className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
@@ -827,6 +914,12 @@ export default function ProfilePage() {
                 </p>
               </div>
               <div>
+                <p className="text-slate-500">Email</p>
+                <p className="mt-1 font-semibold text-slate-900 break-words">
+                  {email || "No email"}
+                </p>
+              </div>
+              <div>
                 <p className="text-slate-500">Address</p>
                 <p className="mt-1 rounded-lg bg-slate-50 p-3 leading-6 text-slate-700 break-words [overflow-wrap:anywhere]">
                   {location?.address || "No address selected"}
@@ -852,16 +945,16 @@ export default function ProfilePage() {
               <div>
                 <p className="text-slate-500">Service types</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedItems.length > 0 ? (
-                    selectedItems.map((item) => (
+                  {selectedServiceItems.length > 0 ? (
+                    selectedServiceItems.map((item) => (
                       <span
-                        key={item}
+                        key={item.id}
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
                           selectedService?.chipClass ??
                           "bg-slate-100 text-slate-700"
                         }`}
                       >
-                        {item}
+                        {item.name}
                       </span>
                     ))
                   ) : (
@@ -874,13 +967,16 @@ export default function ProfilePage() {
               <div>
                 <p className="text-slate-500">Prices</p>
                 <div className="mt-2 space-y-2">
-                  {selectedItems.length > 0 ? (
-                    selectedItems.map((item) => {
-                      const price = prices[item];
+                  {selectedServiceItems.length > 0 ? (
+                    selectedServiceItems.map((item) => {
+                      const price = prices[item.id];
 
                       return (
-                        <p key={item} className="font-semibold text-slate-900">
-                          <span className="break-words">{item}</span>:{" "}
+                        <p
+                          key={item.id}
+                          className="font-semibold text-slate-900"
+                        >
+                          <span className="break-words">{item.name}</span>:{" "}
                           {price?.min || price?.max
                             ? `${price.min || "0"} - ${price.max || "Any"}`
                             : "No price selected"}
@@ -902,12 +998,25 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {submitMessage && (
+              <p
+                className={`mt-5 rounded-lg border p-3 text-sm font-semibold ${
+                  submitSuccess
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-rose-200 bg-rose-50 text-rose-700"
+                }`}
+              >
+                {submitMessage}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700"
+              disabled={isSubmitting}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
               <Send size={18} />
-              Send request
+              {isSubmitting ? "Sending..." : "Send request"}
             </button>
           </aside>
         </form>

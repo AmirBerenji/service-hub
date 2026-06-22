@@ -17,3 +17,10 @@ export interface Service {
   created_at: string | null;
   updated_at: string | null;
 }
+
+export interface BusinessApiResponse {
+  success?: boolean;
+  message?: string;
+  data?: unknown;
+  errors?: Record<string, string[]>;
+}
